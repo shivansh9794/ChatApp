@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './App.css'
 import io from 'socket.io-client'
 
-const socket = io.connect("http://localhost:3000");
+const socket = io.connect("http://localhost:8000");
 
 function App() {
 
@@ -18,9 +18,9 @@ function App() {
 
   return (
 
-    <div className='h-[100vh] w-full flex flex-col items-center justify-center '>
+    <div className='h-[100vh] w-full flex flex-col items-center mt-1 '>
 
-      <div className='bg-gray-300 h-1/2 w-1/3 rounded-2xl flex flex-col items-center justify-center'>
+      <div className='bg-gray-300 h-[200px] w-[250px] rounded-2xl flex flex-col items-center justify-center'>
         {/* Heading */}
         <h1 className='text-green-600 font-bold text-2xl'>Join a Chat</h1>
 
