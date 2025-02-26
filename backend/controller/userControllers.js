@@ -2,15 +2,15 @@ import asyncHandler from 'express-async-handler';
 import User from '../model/userModel.js';
 import generateToken from '../config/generateToken.js';
 
-export const registerUser = asyncHandler( async () => {
-    const {name, email, password, pic} = req.body
+export const registerUser = asyncHandler(async () => {
+    const { name, email, password, pic } = req.body
 
-    if(!name || !email || !password){
+    if (!name || !email || !password) {
         res.status(400);
         throw new Error("All fields are required");
     }
-    const userExists = await User.findOne({email})
-    if(userExists){
+    const userExists = await User.findOne({ email })
+    if (userExists) {
         res.status(400);
         throw new Error("User already exists");
     }
@@ -21,16 +21,15 @@ export const registerUser = asyncHandler( async () => {
         pic
     });
 
-    if(user){
+    if (user) {
         res.status(201).json({
-            _id:user._id,
+            _id: user._id,
             name: user.name,
             email:user.email,
             pic:user.pic,
-            token: generateToken(user._id)
         })
     }
-    else{
+    else {
         throw new Error("Failed to Create the user");
     }
 });
@@ -55,12 +54,11 @@ export const authUser = asyncHandler( async (req,res) => {
 
 
 // we are going to use queries 
-// export const allUsers = asyncHandler(async (req,res)=>{
-//     const keyword  = req.query.search ? {
-//         $or:[
-//             { name:{ $regex: req.query.search, $options:"i" }},
-//             {},
-//         ]
-//     }  
-// });
-
+export const allUsers = asyncHandler(async (req,res)=>{
+    const keyword  = req.query.search ? {
+        $or:[
+            { name:{ $regex: req.query.search, $options:"i" }},
+            {},
+        ]
+    }  
+});
