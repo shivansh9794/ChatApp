@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import User from '../model/userModel.js';
 
+
 export const registerUser = asyncHandler( async () => {
     const {name, email, password, pic} = req.body
 
@@ -33,3 +34,13 @@ export const registerUser = asyncHandler( async () => {
     }
 });
 
+
+// we are going to use queries 
+export const allUsers = asyncHandler(async (req,res)=>{
+    const keyword  = req.query.search ? {
+        $or:[
+            { name:{ $regex: req.query.search, $options:"i" }},
+            {},
+        ]
+    }  
+});
