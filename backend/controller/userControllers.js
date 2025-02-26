@@ -48,3 +48,5 @@ export const allUsers = asyncHandler(async (req, res) => {
     // .find({ _id: { $ne: req.user._id } })  // after JWT
     res.send(users);
 });
+
+
