@@ -2,9 +2,14 @@ import express from 'express'
 import http from 'http'
 import cors from 'cors'
 import { Server } from 'socket.io';
+import connectDB from './config/db.js';
+import userRoutes from './routes/userRoutes.js'
 
+connectDB();
 const app = express();
 app.use(cors());
+
+app.use('/api/user', userRoutes);
 
 const server = http.createServer(app);
 
