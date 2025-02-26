@@ -7,7 +7,11 @@ import userRoutes from './routes/userRoutes.js'
 
 connectDB();
 const app = express();
+app.use(express.json())
 app.use(cors());
+
+app.use(notFound)
+app.use(errorHandler)
 
 app.use('/api/user', userRoutes);
 
