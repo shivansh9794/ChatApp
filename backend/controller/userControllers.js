@@ -2,7 +2,7 @@ import asyncHandler from 'express-async-handler';
 import User from '../model/userModel.js';
 import generateToken from '../config/generateToken.js';
 
-export const registerUser = asyncHandler(async (req,res) => {
+export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, pic } = req.body
 
     if (!name || !email || !password) {
@@ -55,16 +55,19 @@ export const authUser = asyncHandler(async (req, res) => {
 
 // we are going to use queries 
 export const allUsers = asyncHandler(async (req, res) => {
-    const keyword = req.query.search ? {
-        $or: [
-            { name: { $regex: req.query.search, $options: "i" } },
-            { email: { $regex: req.query.search, $options: "i" } },
-        ]
-
-    }
+    const keyword = req.query.search
+        ? {
+            $or: [
+                { name: { $regex: req.query.search, $options: "i" } },
+                // { email: { $regex: req.query.search, $options: "i" } },
+            ],
+        }
         : {};
+        console.log(keyword);
+        
 
-    const users = await User.find(keyword).find({_id:{$ne:req.user._id}})
+    const users = await User.find(keyword)
+    // .find({ _id: { $ne: req.user._id } })  // add it when you want to 
+
+    res.send(users)
 });
-
-
