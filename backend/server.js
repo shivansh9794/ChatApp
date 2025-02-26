@@ -1,9 +1,10 @@
 import express from 'express'
 import http from 'http'
 import cors from 'cors'
-import { Server } from 'socket.io';
-import connectDB from './config/db.js';
+import { Server } from 'socket.io'
+import connectDB from './config/db.js'
 import userRoutes from './routes/userRoutes.js'
+import chatRoutes from './routes/chatRoutes.js'
 // import {notFound,errorHandler} from './middleware/errorMiddleware.js'
 
 connectDB();
@@ -15,6 +16,7 @@ app.use(cors());
 // app.use(errorHandler)
 
 app.use('/api/user', userRoutes);
+app.use('/api/chat', chatRoutes);
 
 const server = http.createServer(app);
 
