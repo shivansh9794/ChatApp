@@ -25,8 +25,8 @@ export const registerUser = asyncHandler(async () => {
         res.status(201).json({
             _id: user._id,
             name: user.name,
-            email:user.email,
-            pic:user.pic,
+            email: user.email,
+            pic: user.pic,
         })
     }
     else {
@@ -34,10 +34,10 @@ export const registerUser = asyncHandler(async () => {
     }
 });
 
-export const authUser = asyncHandler( async (req,res) => {
-    const {email, password} = req.body;
-    const user = await User.findOne({email});
-    if(user && (await user.matchPassword(password))) {
+export const authUser = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (user && (await user.matchPassword(password))) {
         res.json({
             _id: user._id,
             name: user.name,
@@ -46,7 +46,7 @@ export const authUser = asyncHandler( async (req,res) => {
             pic: user.pic,
             token: generateToken(user._id),
         })
-    } else{
+    } else {
         res.status(401);
         throw new Error("Invalid Email or Password");
     }
@@ -54,13 +54,13 @@ export const authUser = asyncHandler( async (req,res) => {
 
 
 // we are going to use queries 
-export const allUsers = asyncHandler(async (req,res)=>{
-    const keyword  = req.query.search ? {
-        $or:[
-            { name:{ $regex: req.query.search, $options:"i" }},
-            {},
+export const allUsers = asyncHandler(async (req, res) => {
+    const keyword = req.query.search ? {
+        $or: [
+            { name: { $regex: req.query.search, $options: "i" } },
+            { email: { $regex: req.query.search, $options: "i" } },
         ]
-    }  
+
+    }
+        : {}
 });
-
-

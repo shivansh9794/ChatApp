@@ -4,6 +4,7 @@ import cors from 'cors'
 import { Server } from 'socket.io';
 import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js'
+import {notFound,errorHandler} from './middleware/errorMiddleware.js'
 
 connectDB();
 const app = express();
