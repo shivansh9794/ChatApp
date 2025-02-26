@@ -4,15 +4,15 @@ import cors from 'cors'
 import { Server } from 'socket.io';
 import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js'
-import {notFound,errorHandler} from './middleware/errorMiddleware.js'
+// import {notFound,errorHandler} from './middleware/errorMiddleware.js'
 
 connectDB();
 const app = express();
 app.use(express.json())
 app.use(cors());
 
-app.use(notFound)
-app.use(errorHandler)
+// app.use(notFound)
+// app.use(errorHandler)
 
 app.use('/api/user', userRoutes);
 
