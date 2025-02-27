@@ -1,5 +1,5 @@
 import express from 'express';
-import {accessChat} from '../controller/chatController.js';
+import { accessChat, fetchChats, createGroupChat, renameGroup } from '../controller/chatController.js';
 import protect from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -7,9 +7,9 @@ const router = express.Router();
 //Add protect in every routes
 
 router.route("/").post( protect, accessChat);
-// router.route("/").get(protect, fetchChats);
-// router.route("/group").post(protect, createGroupChat);
-// router.route("/rename").put(protect, renameGroup);
+router.route("/").get(protect, fetchChats);
+router.route("/group").post(protect, createGroupChat);
+router.route("/rename").put(protect, renameGroup);
 // router.route("/groupremove").put(protect, removeFromGroup);
 // router.route("/groupadd").put(protect, addToGroup);
 
