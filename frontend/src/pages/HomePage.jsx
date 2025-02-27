@@ -1,12 +1,24 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
+
 
 const Home = () => {
-
+  const navigate = useNavigate();
   const [loginState, setLoginState] = useState(true);
   const [formData, setFormData] = useState({});
   const [image, setImage] = useState(null);
+  const [user, setUser] = useState();
 
+  useEffect(() => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+    console.log("--->",userInfo);
+    console.log("haha");
+    setUser(userInfo);
+    if (userInfo){
+      navigate('/chats');
+    }
+  },[navigate])
 
 
   const handleChange = (e) => {
@@ -47,7 +59,7 @@ const Home = () => {
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
 
           {/* FORM */}
-          <form onSubmit={handleSubmit()} className="space-y-6" action="#" method="POST">
+          <form onSubmit={handleSubmit} className="space-y-6" action="#" method="POST">
 
             {/* Email */}
             <div>
