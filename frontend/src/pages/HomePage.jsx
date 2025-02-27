@@ -1,8 +1,39 @@
 import React, { useState } from 'react'
+import axios from 'axios'
 
 const Home = () => {
 
   const [loginState, setLoginState] = useState(true);
+  const [formData, setFormData] = useState({});
+  const [image, setImage] = useState(null);
+
+
+
+  const handleChange = (e) => {
+    if (e.target.type === "file") {
+      setFormData({ ...formData, [e.target.name]: e.target.files[0] });
+      setImage(e.target.files[0]); // Set the selected image
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
+  };
+
+
+  const handleSubmit = async () => {
+    console.log("hahahaah");
+    console.log(formData);
+    try {
+      const res = await axios.post('http://localhost:8000/api/user/login', formData);
+      console.log(res.data);
+      // localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userInfo", JSON.stringify(res.data));
+      // history.push("/chats");
+    }
+    catch (error) {
+      console.log(error);
+    }
+  }
+
 
   const loginCard = () => {
     return (
@@ -14,7 +45,11 @@ const Home = () => {
           </h2>
         </div>
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" action="#" method="POST">
+
+          {/* FORM */}
+          <form onSubmit={handleSubmit()} className="space-y-6" action="#" method="POST">
+
+            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -30,10 +65,14 @@ const Home = () => {
                   id="email"
                   autoComplete="email"
                   required=""
+                  value={formData.email}
+                  onChange={handleChange}
                   className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                 />
               </div>
             </div>
+
+            {/* Password */}
             <div>
               <div className="flex items-center justify-between">
                 <label
@@ -59,13 +98,16 @@ const Home = () => {
                   id="password"
                   autoComplete="current-password"
                   required=""
+                  value={formData.password}
+                  onChange={handleChange}
                   className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                 />
               </div>
             </div>
             <div>
               <button
-                type="submit"
+                type="button"
+                onClick={() => { handleSubmit() }}
                 className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Sign in
@@ -78,8 +120,8 @@ const Home = () => {
     )
   }
 
-  const signUpCard=()=>{
-    return(
+  const signUpCard = () => {
+    return (
       <div className="flex h-auto py-2 w-auto px-20 rounded-b-xl bg-gray-300 flex-col justify-center">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
 
@@ -89,8 +131,9 @@ const Home = () => {
         </div>
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
           <form className="space-y-6" action="#" method="POST">
-          {/* Name */}
-          <div>
+
+            {/* Name */}
+            <div>
               <label
                 htmlFor="name"
                 className="block text-sm/6 font-medium text-gray-900"
@@ -163,24 +206,44 @@ const Home = () => {
               {/* Confirm Password */}
 
               <div>
-              <label
-                htmlFor="cpass"
-                className="block text-sm/6 font-medium text-gray-900"
-              >
-                Confirm Password
-              </label>
-              <div className="mt-2">
-                <input
-                  placeholder='Confirm Password...'
-                  type="password"
-                  name="cpass"
-                  id="cpass"
-                  autoComplete="current-password"
-                  required=""
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                />
+                <label
+                  htmlFor="cpass"
+                  className="block text-sm/6 font-medium text-gray-900"
+                >
+                  Confirm Password
+                </label>
+                <div className="mt-2">
+                  <input
+                    placeholder='Confirm Password...'
+                    type="password"
+                    name="cpass"
+                    id="cpass"
+                    autoComplete="current-password"
+                    required=""
+                    className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                  />
+                </div>
               </div>
-            </div>
+
+
+              <div>
+                <label
+                  htmlFor="image"
+                  className="block text-sm/6 font-medium text-gray-900"
+                >
+                  Add Image
+                </label>
+                <div className="mt-2">
+                  <input
+                    placeholder='Confirm Password...'
+                    type="file"
+                    name="image"
+                    id="image"
+                    required=""
+                    className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                  />
+                </div>
+              </div>
 
 
             </div>
@@ -212,7 +275,7 @@ const Home = () => {
           <button className='col-span-1 py-1 active:bg-gray-600 active:rounded-4xl mt-2 m-1' onClick={handleLoginState}>Login</button>
           <button className='col-span-1 py-1 active:bg-gray-600 active:rounded-4xl mt-2 m-1' onClick={handleLoginState} >Sign Up</button>
         </div>
-        {(loginState)?loginCard():signUpCard()}
+        {(loginState) ? loginCard() : signUpCard()}
       </div>
     </div>
   )
