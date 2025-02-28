@@ -13,14 +13,13 @@ const Home = () => {
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
     console.log("--->",userInfo);
-    console.log("haha");
     setUser(userInfo);
     if (userInfo){
       navigate('/chats');
     }
   },[navigate])
 
-
+  // login and SignUp form handling
   const handleChange = (e) => {
     if (e.target.type === "file") {
       setFormData({ ...formData, [e.target.name]: e.target.files[0] });

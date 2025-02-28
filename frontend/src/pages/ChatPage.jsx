@@ -1,9 +1,15 @@
 import React from 'react'
 
 const ChatPage = () => {
+
+  const {user} = chatState();
+  
+
   return (
-    <div className='bg-amber-200'>
-        ChatPage
+    <div className='w-full bg-amber-100'>
+      <div>
+        hello
+      </div>
     </div>
   )
 }
