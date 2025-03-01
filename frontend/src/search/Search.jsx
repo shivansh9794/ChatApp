@@ -6,7 +6,8 @@ import axios from 'axios';
 
 const Search = () => {
 
-    const { user, selectedChat, setSelectedChat } = chatState();
+    const { user, selectedChat, setSelectedChat ,chats,
+        setChats, } = chatState();
     const [search, setSearch] = useState();
     const [searchResult, setSearchResult] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -35,7 +36,6 @@ const Search = () => {
         }
     }
 
-
     const accessChat = async (userId) => {
         try {
             const config = {
@@ -45,8 +45,9 @@ const Search = () => {
                 },
             };
 
-            const { data } = await axios.get("http://localhost:8000/api/chat", config);
+            const { data } = await axios.get("http://localhost:8000/api/chat",{userId}, config);
             setSelectedChat(data);
+            if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
 
             console.log("chat fetched==>", data);
 
@@ -109,19 +110,15 @@ const Search = () => {
                 searchResult?.map(user => {
                     return (
                         <div key={user._id} className='flex bg-gray-300 m-2 rounded-2xl  w-full justify-center p-2'
-                            onClick={() => { accessChat(user._id) }}
+                            onClick={()=>accessChat(user._id)}
                         >
                             <ul>
                                 <h1 className='font-bold text-xl'>{user.name}</h1>
                             </ul>
                         </div>
                     )
-
-
                 })
-
             )}
-
         </div>
     )
 }
