@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
+import { chatState } from '../context/chatProvider';
 
 
 const Home = () => {
+  const {user , setUser }=chatState();
   const navigate = useNavigate();
   const [loginState, setLoginState] = useState(true);
   const [formData, setFormData] = useState({});
   const [image, setImage] = useState(null);
-  const [user, setUser] = useState();
+  // const [user, setUser] = useState();
+
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
@@ -37,7 +40,7 @@ const Home = () => {
       console.log(res.data);
       // localStorage.setItem("token", res.data.token);
       localStorage.setItem("userInfo", JSON.stringify(res.data));
-      // history.push("/chats");
+      navigate('/chats');
     }
     catch (error) {
       console.log(error);

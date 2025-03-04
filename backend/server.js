@@ -1,7 +1,8 @@
 import express from 'express'
-import http from 'http'
+// import http from 'http'
 import cors from 'cors'
-import { Server } from 'socket.io'
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import connectDB from './config/db.js'
 import userRoutes from './routes/userRoutes.js'
 import chatRoutes from './routes/chatRoutes.js'
@@ -20,29 +21,41 @@ app.use('/api/user', userRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/message', messageRoutes);
 
-const server = http.createServer(app);
-
-const io = new Server(server , {
-    cors:{
-        origin:"http://localhost:5173",
-        methods:["GET","POST"],
-    },
+const server = app.listen(8000, () => {
+    console.log("SERVER IS RUNNING");
 });
+
+const io = new Server(server, {
+    pingTimeout:6000,
+    cors: {
+        origin: "http://localhost:5173"
+    },
+})
 
 io.on("connection",(socket)=>{
-    console.log(`User Connected : ${socket.id}`);
+    console.log("connected to Socket.Io");
 
-    socket.on("join_room",(data)=>{
-        socket.join(data);
-        console.log(`User with id ${socket.id} joind room : ${data}`);
-        
+    socket.on("setup",(userData)=>{
+        socket.join(userData._id);
+        console.log(userData._id);
+        socket.emit('connected');
     });
 
-    socket.on("disconnect",()=>{
-        console.log("User Disconnected",socket.id);
+    socket.on('join chat',(room)=>{
+        socket.join(room);
+        console.log('user Joined room :'+room);
     });
-});
 
-server.listen(8000,()=>{
-    console.log("SERVER IS RUNNING");
+    socket.on('new message',(newMessageReceived)=>{
+        var chat=newMessageReceived.chat;
+        if(!chat.users)return console.log("Chat.Users Not Defined");
+        chat.users.forEach(user => {
+            if(user._id == newMessageReceived.sender._id) return;
+            socket.in(user._id).emit("message received", newMessageReceived);
+        });
+    })
+
+    // typing 
+    socket.on("typing", (room) => socket.in(room).emit("typing"));
+    socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 });

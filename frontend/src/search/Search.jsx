@@ -45,10 +45,9 @@ const Search = () => {
                 },
             };
 
-            const { data } = await axios.get("http://localhost:8000/api/chat",{userId}, config);
+            const { data } = await axios.post("http://localhost:8000/api/chat",{userId}, config);
             setSelectedChat(data);
             if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
-
             console.log("chat fetched==>", data);
 
         } catch (error) {
@@ -58,7 +57,7 @@ const Search = () => {
 
     
     return (
-        <div className='h-[100vh] w-full'>
+        <div className='absolute h-auto w-72'>
 
             <form className="max-w-full mx-auto">
                 <label
@@ -88,7 +87,7 @@ const Search = () => {
                     <input
                         type="search"
                         id="default-search"
-                        className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 "
+                        className="block w-full p-3 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 "
                         placeholder="Search user to chat..."
                         required=""
                         value={search}
@@ -96,7 +95,7 @@ const Search = () => {
                     />
                     <button
                         type="submit"
-                        className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2"
+                        className="text-white absolute top-2 end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2"
                         onClick={handleSearch}
                     >
                         Search
