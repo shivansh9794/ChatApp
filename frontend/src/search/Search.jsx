@@ -57,7 +57,7 @@ const Search = () => {
 
     
     return (
-        <div className='absolute h-auto w-72'>
+        <div className='h-auto w-72'>
 
             <form className="max-w-full mx-auto">
                 <label
@@ -95,7 +95,7 @@ const Search = () => {
                     />
                     <button
                         type="submit"
-                        className="text-white absolute top-2 end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2"
+                        className="text-white absolute end-2.5 bottom-2.5 text-center py-1 top-2 bg-green-400 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4"
                         onClick={handleSearch}
                     >
                         Search
@@ -108,11 +108,11 @@ const Search = () => {
             ) : (
                 searchResult?.map(user => {
                     return (
-                        <div key={user._id} className='flex bg-gray-300 m-2 rounded-2xl  w-full justify-center p-2'
+                        <div key={user._id} className='absolute flex bg-gray-200 m-2 rounded-lg w-[250px] justify-center p-2'
                             onClick={()=>accessChat(user._id)}
                         >
                             <ul>
-                                <h1 className='font-bold text-xl'>{user.name}</h1>
+                                <h1 className='font-bold font-mono text-xl'>{user.name}</h1>
                             </ul>
                         </div>
                     )

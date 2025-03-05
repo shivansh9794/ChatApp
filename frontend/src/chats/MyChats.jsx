@@ -51,8 +51,8 @@ const MyChats = ({fetchAgain , setFetchAgain ,setShowChatPage}) => {
   
 
   return (
-    <div className='bg-gray-300 w-full h-full border-b-2 border-l-2 border-r-2'>
-      <div className='bg-gray-400 w-full p-2'>
+    <div className='bg-gray-300 w-full h-full border-b-2  border-r-2'>
+      <div className='bg-gray-300 shadow-lg w-full p-2'>
         <h1 className='text-2xl'>My Chats</h1>
       </div>
 
@@ -62,7 +62,7 @@ const MyChats = ({fetchAgain , setFetchAgain ,setShowChatPage}) => {
             {
               chats?.map((chat) => {
                 return (
-                  <div className={`cursor-pointer py-5 rounded-lg p-2 m-2 ${selectedChat===chat?'bg-blue-500':'bg-blue-300'}`}  onClick={()=>{setSelectedChat(chat), setShowChatPage(true)}} key={chat._id}>
+                  <div className={`cursor-pointer py-5 rounded-lg p-2 m-2 ${selectedChat===chat?'bg-green-300':'bg-blue-50'}`}  onClick={()=>{setSelectedChat(chat), setShowChatPage(true)}} key={chat._id}>
                     <h1 className='text-xl text-black font-bold '>{!chat.isGroupChat ? (getSender(loggedUser, chat.users)) : (chat.chatName)}</h1>
                   </div>
                 )

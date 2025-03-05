@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { chatState } from '../context/chatProvider';
 import axios from 'axios';
 import io from 'socket.io-client'
+import ChatComponent from '../components/ChatComponent'
 
 const ENDPOINT = "http://localhost:8000";
 var socket, selectedChatCompare;
@@ -117,42 +118,15 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
     };
 
     return (
-        // <div className="chat-box bg-gray-300 border-l-2 border-r-2 border-b-2 h-[91vh] w-full flex flex-col justify-end">
-
-        //     <div className="w-full h-full justify-end">
-        //         {messages.map((message) => (
-        //             <div key={message._id} className={` ${message.sender._id===user._id ?'bg-blue-100':"bg-blue-200"} py-2 m-1 w-auto h-auto overflow-hidden`}>
-        //                 <strong>{message.sender.name}:</strong> {message.content}
-        //             </div>
-        //         ))}
-        //     </div>
-
-        //     <div className="w-full max-w-full flex-col items-end mt-4">
-        //         <input
-        //             className="w-full placeholder:text-black text-black text-sm border border-slate-200 bg-gray-400 px-3 py-4 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
-        //             placeholder="Type here..."
-        //             onChange={typingHandler}
-        //             value={newMessage}
-        //             onKeyDown={sendMessage}  // Send message when Enter is pressed
-        //         />
-        //     </div>
-        // </div>
-
-        <div className="chat-box bg-gray-300 border-l-2 border-r-2 border-b-2 h-[91vh] w-full flex flex-col justify-end">
+        <div className="bg-gray-300 border-l-2 border-r-2 border-b-2 h-[91vh] w-full flex flex-col justify-end">
 
             {/* Message Container */}
-            <div className="w-full h-full flex flex-col justify-end overflow-hidden overflow-y-scroll">
-                {messages.map((message) => (
-                    <div key={message._id} className={`py-2 px-2 rounded-lg m-1 w-auto h-auto ${message.sender._id === user._id ? 'bg-green-200 ml-auto text-right' : 'bg-blue-50 mr-auto text-left'}`}>
-                        <strong>{message.sender.name}:</strong> {message.content}
-                    </div>
-                ))}
-            </div>
+            <ChatComponent messages={messages} user={user}></ChatComponent>
+
+            {/* Typing Indicator */}
+            {istyping ? (<div className='font-bold text-black font-mono bg-transparent w-auto '>Typing...</div>) : (<></>)}
 
             {/* Message Input */}
-
-            {istyping ? (<div className='font-bold text-black font-mono'>Typing...</div>) : (<></>)}
-
             <div className="w-full max-w-full flex-col items-end mt-4">
                 <input
                     className="w-full placeholder:text-black text-black text-sm border border-slate-200 bg-gray-400 px-3 py-4 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"

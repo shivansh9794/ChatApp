@@ -12,7 +12,7 @@ import messageRoutes from './routes/messageRoutes.js'
 connectDB();
 const app = express();
 app.use(express.json())
-app.use(cors());
+app.use(cors('*'));
 
 // app.use(notFound)
 // app.use(errorHandler)
@@ -28,7 +28,7 @@ const server = app.listen(8000, () => {
 const io = new Server(server, {
     pingTimeout:6000,
     cors: {
-        origin: "http://localhost:5173"
+        origin:'*'
     },
 })
 
