@@ -107,7 +107,7 @@ const Ques = () => {
     };
 
     const sendReply = (event) => {
-        if (event.key === "Enter"){
+        if (event.key === "Enter") {
             setMessages((prevMessages) => [...prevMessages, question]); // Add user question to messages
             const reply = askQuestion(question);
             setMessages((prevMessages) => [...prevMessages, reply]); // Add assistant reply to messages
@@ -130,47 +130,45 @@ const Ques = () => {
 
 
     return (
-        <div className="bg-gray-200 h-[100vh] w-full flex flex-col justify-end" >
+        <div className="bg-gray-200 border-3 h-[100vh] w-full flex justify-center items-center" >
+            <div className='w-[90%] h-[90%] border-2 flex flex-col justify-end'>
+                {/* Message Container */}
+                <div className="w-full overflow-hidden h-[60%]">
+                    <div className='overflow-y-scroll h-full w-full flex flex-col' ref={messagesContainerRef}>
+                        {messages?.map((message, idx) => (
+                            <div key={idx} className={`py-2 px-2 rounded-lg m-1 w-auto h-auto ${message._id === user._id ? 'bg-green-200 ml-auto text-right' : 'bg-blue-50 mr-auto text-left'}`}>
+                                {message}
+                            </div>
+                        ))}
+                    </div>
 
-            {/* Message Container */}
-            <div className="w-full overflow-hidden h-[60%]">
-                <div className='overflow-y-scroll h-full w-full flex flex-col' ref={messagesContainerRef}>
-                    {messages?.map((message, idx) => (
-                        <div key={idx} className={`py-2 px-2 rounded-lg m-1 w-auto h-auto ${message._id === user._id ? 'bg-green-200 ml-auto text-right' : 'bg-blue-50 mr-auto text-left'}`}>
-                            {message}
-                        </div>
-                    ))}
                 </div>
 
-            </div>
+                {/* Message Input */}
+                <div className="w-full flex-col items-end px-5 h-[40%]">
 
+                    <label className="text-green-600 font-bold mb-2">Frequently Asked Questions..</label>
+                    <div className='overflow-y-scroll grid grid-cols-4 px-10 items-center h-[59%] w-full max-[450px]:grid-cols-1 max-[670px]:grid-cols-2 max-[1000px]:grid-cols-3 max-[500px]:flex max-[500px]:flex-col max-[500px]:items-center'>
+                        {(data.chatbot_data).map(item =>
+                            item.question.map(que => {
+                                // console.log(que);
+                                return <button className='overflow-visible col-span-1 min-w-64 w-60 rounded-lg p-2 bg-green-200 text-black font-bold mb-1' onClick={() => { sendQue(que, item) }}>{que}</button>;
+                            })
+                        )}
+                    </div>
 
-
-            {/* Message Input */}
-            <div className="w-full flex-col items-end gap-0.5 h-[37%] px-3 p-1">
-
-                <label htmlFor="">Frequently Asked Questions..</label>
-                <div className='overflow-y-scroll grid grid-cols-4 px-10 items-center h-[60%] w-full max-[450px]:grid-cols-1 max-[670px]:grid-cols-2 max-[1000px]:grid-cols-3 max-[500px]:flex max-[500px]:flex-col max-[500px]:items-center'>
-                    {(data.chatbot_data).map(item =>
-                        item.question.map(que => {
-                            // console.log(que);
-                            return <button className='overflow-visible col-span-1 min-w-64 w-72 rounded-lg p-2 bg-blue-300 text-black font-bold mb-1' onClick={() => { sendQue(que, item) }}>{que}</button>;
-                        })
-                    )}
+                    <div className='justify-center w-full flex items-center gap-2 mt-3'>
+                        <input
+                            className="w-[50%] cursor-text placeholder:text-black text-black text-sm border border-slate-200 bg-green-400 px-2 rounded-3xl py-4 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
+                            placeholder="Chat With Chat Assistent......."
+                            onChange={typingHandler}
+                            value={question}
+                            onKeyDown={sendReply}  // Send message when Enter is pressed
+                        />
+                    </div>
                 </div>
-
-
-                <input
-                    className="w-full cursor-text placeholder:text-black text-black text-sm border border-slate-200 bg-gray-400 px-2 rounded-3xl py-4 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
-                    placeholder="Chat With Chat Assistent......."
-                    onChange={typingHandler}
-                    value={question}
-                    onKeyDown={sendReply}  // Send message when Enter is pressed
-                />
             </div>
-
         </div>
-
     );
 };
 
