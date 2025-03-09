@@ -9,6 +9,10 @@ function ChatComponent({ messages, user }) {
     }
   }, [messages]);
 
+  function trimTime(isoDatetime) {
+    return isoDatetime.split("T")[0];
+  }
+
   return (
     <div className="w-full h-full overflow-hidden">
       <div
@@ -25,6 +29,7 @@ function ChatComponent({ messages, user }) {
             }`}
           >
             <strong>{message.sender.name}:</strong> {message.content}
+            <h1>{(message.createdAt).split("T")[1].slice(0, 5)}</h1>
           </div>
         ))}
       </div>

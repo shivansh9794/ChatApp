@@ -5,7 +5,6 @@ import { chatState } from '../context/chatProvider';
 
 // const ENDPOINT = "http://localhost:8000";
 // var socket, selectedChatCompare;
-
 import { findReply, askQuestion } from '../Questions/ReplyHandler'
 import data from '../Questions/DummyQuestions'
 
@@ -16,8 +15,6 @@ const Ques = () => {
     const [newMessage, setNewMessage] = useState("");
     const messagesContainerRef = useRef(null);
     // const [socketConnected, setSocketConnected] = useState(false);
-    // const [typing, setTyping] = useState(false);
-    // const [istyping, setIsTyping] = useState(false);
 
 
     // useEffect(() => {
@@ -28,7 +25,6 @@ const Ques = () => {
     //     socket.on("typing", () => setIsTyping(true));
     //     socket.on("stop typing", () => setIsTyping(false));
     // }, []);
-
 
     // // Fetch messages when selectedChat changes
     // const fetchMessages = async () => {
