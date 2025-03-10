@@ -13,7 +13,9 @@ app.use(cors('*'));
 
 // app.use(notFound)
 // app.use(errorHandler)
-
+app.use('/',(req,res)=>{
+    res.send("Chat Backend is Running 🔥");
+});
 app.use('/api/user', userRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/message', messageRoutes);
