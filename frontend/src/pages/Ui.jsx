@@ -34,7 +34,8 @@ const Ui = () => {
     // Main Return
     return (
         <div className='w-[100%] flex flex-col'>
-
+            console.log("hello");
+            
             {/* Navbar */}
             <div className='bg-green-300 p-2 h-auto flex justify-between w-[100%]'>
                 <div className='font-extrabold text-2xl text-black '>CHAT SIDE</div>
