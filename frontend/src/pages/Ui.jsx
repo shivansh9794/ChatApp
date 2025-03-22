@@ -40,7 +40,7 @@ const Ui = () => {
                 <div>{Search()}</div>
             </div>
 
-            <div className='grid grid-cols-10 w-full h-[89vh] gap-1 '>
+            <div className='grid grid-cols-10 w-full h-[91vh] gap-1 '>
                 {/* All Chats */}
                 <div className='col-span-4 w-full'>
                     {user && <MyChats fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} setShowChatPage={setShowChatPage} />}

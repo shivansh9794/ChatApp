@@ -3,8 +3,9 @@ import { chatState } from '../context/chatProvider';
 import axios from 'axios';
 import io from 'socket.io-client'
 import ChatComponent from '../components/ChatComponent'
+import { baseUrl } from '../config/KeyConfig';
 
-const ENDPOINT = "http://localhost:8000";
+const ENDPOINT = baseUrl;
 var socket, selectedChatCompare;
 
 const ChatBox = ({ fetchAgain, setFetchAgain }) => {
@@ -37,7 +38,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 },
             };
 
-            const { data } = await axios.get(`http://localhost:8000/api/message/${selectedChat._id}`, config);
+            const { data } = await axios.get(`${baseUrl}/api/message/${selectedChat._id}`, config);
             setMessages(data);  // Update messages state with fetched data
             console.log('all msgs -->', data);
             socket.emit('join chat', selectedChat._id);
@@ -77,7 +78,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                     },
                 };
 
-                const { data } = await axios.post('http://localhost:8000/api/message', {
+                const { data } = await axios.post(`${baseUrl}/api/message`, {
                     content: newMessage,
                     chatId: selectedChat._id,  // Make sure you send the chat ID properly
                 },
@@ -116,13 +117,23 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             }
         }, timerLength);
     };
-    
-    let SenderName=selectedChat.latestMessage.sender.name;
+
+
+    let SenderName="";
+    if(selectedChat?.users[1]._id==user._id){
+        SenderName=selectedChat?.users[0].name;
+    }
+    else if(selectedChat?.users[0]._id==user._id){
+    SenderName=selectedChat?.users[1].name;
+    }
+    else{
+        SenderName="Reload page to Load Name"
+    }
 
     return (
         <div className="bg-gray-300 border-l-2 border-r-2 border-b-2 h-[91vh] w-full flex flex-col justify-end">
-            <div className='w-full p-4 bg-green-300 border '>
-                <h1 className='font-bold text-lg'>{SenderName}</h1>
+            <div className='w-full p-2 bg-gray-300 shadow-lg '>
+                <h1 className='font-bold text-2xl'>{SenderName}</h1>
             </div>
 
 

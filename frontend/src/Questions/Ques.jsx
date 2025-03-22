@@ -3,10 +3,11 @@ import { chatState } from '../context/chatProvider';
 // import axios from 'axios';
 // import io from 'socket.io-client'
 
-// const ENDPOINT = "http://localhost:8000";
+// const ENDPOINT = baseUrl;
 // var socket, selectedChatCompare;
 import { findReply, askQuestion } from '../Questions/ReplyHandler'
 import data from '../Questions/DummyQuestions'
+import { baseUrl } from '../config/KeyConfig';
 
 const Ques = () => {
     const { user } = chatState();
@@ -37,7 +38,7 @@ const Ques = () => {
     //             },
     //         };
 
-    //         const { data } = await axios.get(`http://localhost:8000/api/message/${selectedChat._id}`, config);
+    //         const { data } = await axios.get(`${baseUrl}/api/message/${selectedChat._id}`, config);
     //         setMessages(data);  // Update messages state with fetched data
     //         console.log('all msgs -->', data);
     //         socket.emit('join chat', selectedChat._id);
@@ -77,7 +78,7 @@ const Ques = () => {
                     },
                 };
 
-                const { data } = await axios.post('http://localhost:8000/api/message', {
+                const { data } = await axios.post(`${baseUrl}/api/message`, {
                     content: newMessage,
                     chatId: selectedChat._id,  // Make sure you send the chat ID properly
                 },

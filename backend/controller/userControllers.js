@@ -63,11 +63,23 @@ export const allUsers = asyncHandler(async (req, res) => {
             ],
         }
         : {};
-        console.log(keyword);
-        
+    console.log(keyword);
+
 
     const users = await User.find(keyword)
     // .find({ _id: { $ne: req.user._id } })  // add it when you want to 
 
     res.send(users)
+});
+
+export const deleteUser = asyncHandler(async (req, res) => {
+
+    try {
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) return res.status(404).send({ message: "User not found" });
+        res.send({ message: "User deleted", user });
+    } catch (error) {
+        res.status(500).send({ message: "Error deleting user", error });
+    }
+    
 });

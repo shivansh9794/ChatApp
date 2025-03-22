@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import { chatState } from '../context/chatProvider';
+import { baseUrl } from '../config/KeyConfig';
 
 
 const Home = () => {
@@ -36,7 +37,7 @@ const Home = () => {
     console.log("hahahaah");
     console.log(formData);
     try {
-      const res = await axios.post('http://localhost:8000/api/user/login', formData);
+      const res = await axios.post(`${baseUrl}/api/user/login`, formData);
       console.log(res.data);
       // localStorage.setItem("token", res.data.token);
       localStorage.setItem("userInfo", JSON.stringify(res.data));

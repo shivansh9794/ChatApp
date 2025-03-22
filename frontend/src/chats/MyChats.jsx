@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { chatState } from '../context/chatProvider'
 import axios from 'axios';
 import { getSender } from '../config/ChatLogics'
+import { baseUrl } from '../config/KeyConfig';
 
 const MyChats = ({fetchAgain , setFetchAgain ,setShowChatPage}) => {
 
@@ -33,7 +34,7 @@ const MyChats = ({fetchAgain , setFetchAgain ,setShowChatPage}) => {
           Authorization: `Bearer ${(JSON.parse(localStorage.getItem("userInfo"))).token}`,
         },
       };
-      const { data } = await axios.get("http://localhost:8000/api/chat", config);
+      const { data } = await axios.get(`${baseUrl}/api/chat`, config);
       setChats(data);
       setFetchAgain(false);
     } catch (error) {
@@ -64,15 +65,17 @@ const MyChats = ({fetchAgain , setFetchAgain ,setShowChatPage}) => {
                 return (
                   <div className={`cursor-pointer py-5 rounded-lg p-2 m-2 ${selectedChat===chat?'bg-green-300':'bg-blue-50'}`}  onClick={()=>{setSelectedChat(chat), setShowChatPage(true)}} key={chat._id}>
                     <h1 className='text-xl text-black font-bold '>{!chat.isGroupChat ? (getSender(loggedUser, chat.users)) : (chat.chatName)}</h1>
+                    <h6 className={`${(chat?.latestMessage?.sender._id==user._id)?"text-green-700":"text-blue-800"}`}>{chat?.latestMessage?.content}</h6>
                   </div>
                 )
               })
             }
           </div>
         ) : (
-          <div>
-            Loading.....
-          </div>
+          
+          <div className='w-full h-[80vh] flex items-center justify-center'>
+            <h1>Loading.....</h1>
+          </div> 
         )
         }
       </div>

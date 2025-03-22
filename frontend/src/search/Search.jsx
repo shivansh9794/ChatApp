@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { chatState } from '../context/chatProvider';
 import spinner from '../components/Spinner'
 import axios from 'axios';
+import { baseUrl } from '../config/KeyConfig';
 
 
 const Search = () => {
@@ -27,7 +28,7 @@ const Search = () => {
                 },
             };
 
-            const { data } = await axios.get(`http://localhost:8000/api/user/register?search=${search}`, config);
+            const { data } = await axios.get(`${baseUrl}/api/user/register?search=${search}`, config);
             setLoading(false);
             setSearchResult(data);
         }
@@ -45,7 +46,7 @@ const Search = () => {
                 },
             };
 
-            const { data } = await axios.post("http://localhost:8000/api/chat",{userId}, config);
+            const { data } = await axios.post(`${baseUrl}/api/chat`,{userId}, config);
             setSelectedChat(data);
             if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
             console.log("chat fetched==>", data);
@@ -57,7 +58,7 @@ const Search = () => {
 
     
     return (
-        <div className='h-auto w-72'>
+        <div className='h-auto w-40'>
 
             <form className="max-w-full mx-auto">
                 <label
@@ -88,14 +89,14 @@ const Search = () => {
                         type="search"
                         id="default-search"
                         className="block w-full p-3 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 "
-                        placeholder="Search user to chat..."
+                        placeholder="Search ...."
                         required=""
                         value={search}
                         onChange={(e) => { setSearch(e.target.value) }}
                     />
                     <button
                         type="submit"
-                        className="text-white absolute end-2.5 bottom-2.5 text-center py-1 top-2 bg-green-400 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4"
+                        className="text-white absolute end-2.5 bottom-2.5 text-center py-1 top-2 bg-green-400 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-1"
                         onClick={handleSearch}
                     >
                         Search
