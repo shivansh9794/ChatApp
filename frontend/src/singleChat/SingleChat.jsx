@@ -116,9 +116,15 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             }
         }, timerLength);
     };
+    
+    let SenderName=selectedChat.latestMessage.sender.name;
 
     return (
         <div className="bg-gray-300 border-l-2 border-r-2 border-b-2 h-[91vh] w-full flex flex-col justify-end">
+            <div className='w-full p-4 bg-green-300 border '>
+                <h1 className='font-bold text-lg'>{SenderName}</h1>
+            </div>
+
 
             {/* Message Container */}
             <ChatComponent messages={messages} user={user}></ChatComponent>
