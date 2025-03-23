@@ -153,6 +153,8 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                     onKeyDown={sendMessage}  // Send message when Enter is pressed
                 />
             </div>
+
+            {/* github */}
         </div>
 
 
