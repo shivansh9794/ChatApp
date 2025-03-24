@@ -63,7 +63,7 @@ const MyChats = ({fetchAgain , setFetchAgain ,setShowChatPage}) => {
             {
               chats?.map((chat) => {
                 return (
-                  <div className={`cursor-pointer py-5 rounded-lg p-2 m-2 ${selectedChat===chat?'bg-green-300':'bg-blue-50'}`}  onClick={()=>{setSelectedChat(chat), setShowChatPage(true)}} key={chat._id}>
+                  <div className={`cursor-pointer py-3 rounded-lg p-2 m-2 ${selectedChat===chat?'bg-green-300':'bg-blue-50'}`}  onClick={()=>{setSelectedChat(chat), setShowChatPage(true)}} key={chat._id}>
                     <h1 className='text-xl text-black font-bold '>{!chat.isGroupChat ? (getSender(loggedUser, chat.users)) : (chat.chatName)}</h1>
                     <h6 className={`${(chat?.latestMessage?.sender._id==user._id)?"text-green-700":"text-blue-800"}`}>{chat?.latestMessage?.content}</h6>
                   </div>

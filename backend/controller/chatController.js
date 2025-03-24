@@ -75,7 +75,7 @@ export const createGroupChat = asyncHandler(async(req,res) => {
         return res.status(400).send("More than 2 users are required to form a group chat")
     }
 
-    users.push(req.user);
+    users.push(req.user); // adding currently Logged in user to a Group
 
     try {
         const groupChat = await Chat.create({
@@ -84,7 +84,6 @@ export const createGroupChat = asyncHandler(async(req,res) => {
             isGroupChat: true,
             groupAdmin: req.user
         })
-
         const fullGroupChat = await Chat.findOne({_id: groupChat._id})
         .populate("users", "-password")
         .populate("groupAdmin", "-password");

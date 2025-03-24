@@ -117,10 +117,12 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             }
         }, timerLength);
     };
-
-
+    
     let SenderName="";
-    if(selectedChat?.users[1]._id==user._id){
+    if(selectedChat.isGroupChat==true){
+        SenderName=selectedChat.chatName;
+    }
+    else if(selectedChat?.users[1]._id==user._id){
         SenderName=selectedChat?.users[0].name;
     }
     else if(selectedChat?.users[0]._id==user._id){

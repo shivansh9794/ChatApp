@@ -8,9 +8,16 @@ import { chatState } from '../context/chatProvider';
 const Ui = () => {
 
     const { user } = chatState();
+    const navigate = useNavigate();
     const [searchDrwer, setSearchDrawer] = useState(true);
     const [fetchAgain, setFetchAgain] = useState(false);
     const [showChatPage, setShowChatPage] = useState(false);
+
+    useEffect(()=>{
+        if(!user){
+            navigate('/');
+        }
+    },[navigate])
 
     const skeleton = () => {
         return (
@@ -20,9 +27,6 @@ const Ui = () => {
         )
     }
 
-    const toggleChatPage = () => {
-        setShowChatPage(!showChatPage);
-    };
 
     if (!user) {
         return (
@@ -42,14 +46,14 @@ const Ui = () => {
 
             <div className='grid grid-cols-10 w-full h-[91vh] gap-1 '>
                 {/* All Chats */}
-                <div className='col-span-4 w-full'>
+                <div className='col-span-3 w-full'>
                     {user && <MyChats fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} setShowChatPage={setShowChatPage} />}
                 </div>
 
                 {/* Message Page */}
-                <div className={`col-span-6 w-full`} >
+                <div className={`col-span-7 w-full`} >
                     {showChatPage ?
-                        <SingleChat fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} /> : skeleton()}
+                        <SingleChat fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/> : skeleton()}
                 </div>
             </div>
         </div>

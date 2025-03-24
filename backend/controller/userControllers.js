@@ -52,7 +52,6 @@ export const authUser = asyncHandler(async (req, res) => {
     }
 })
 
-
 // we are going to use queries 
 export const allUsers = asyncHandler(async (req, res) => {
     const keyword = req.query.search
