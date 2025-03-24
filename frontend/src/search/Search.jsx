@@ -7,8 +7,7 @@ import { baseUrl } from '../config/KeyConfig';
 
 const Search = () => {
 
-    const { user, selectedChat, setSelectedChat ,chats,
-        setChats, } = chatState();
+    const { user, selectedChat, setSelectedChat ,chats,setChats, } = chatState();
     const [search, setSearch] = useState();
     const [searchResult, setSearchResult] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -30,6 +29,7 @@ const Search = () => {
 
             const { data } = await axios.get(`${baseUrl}/api/user/register?search=${search}`, config);
             setLoading(false);
+            setSearch("");
             setSearchResult(data);
         }
         catch (error) {
@@ -50,7 +50,7 @@ const Search = () => {
             setSelectedChat(data);
             if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
             console.log("chat fetched==>", data);
-
+            setSearchResult(null);
         } catch (error) {
             console.log(error);
         }
@@ -109,7 +109,7 @@ const Search = () => {
             ) : (
                 searchResult?.map(user => {
                     return (
-                        <div key={user._id} className='absolute flex bg-gray-200 m-2 rounded-lg w-[250px] justify-center p-2'
+                        <div key={user._id} className='absolute cursor-pointer z-40 flex bg-gray-200 m-2 rounded-lg w-[140px] justify-center p-2'
                             onClick={()=>accessChat(user._id)}
                         >
                             <ul>
