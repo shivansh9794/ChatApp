@@ -5,11 +5,8 @@ import { chatState } from '../context/chatProvider';
 import { baseUrl } from '../config/KeyConfig';
 
 
-const Home = () => {
-
-  
+const Home = () => {  
   const { user, setUser } = chatState();
-
   const navigate = useNavigate();
   const [loginState, setLoginState] = useState(true);
   const [formData, setFormData] = useState({});
