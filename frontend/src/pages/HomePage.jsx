@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { chatState } from '../context/chatProvider';
 import { baseUrl } from '../config/KeyConfig';
 
-
 const Home = () => {  
   const { user, setUser } = chatState();
   const navigate = useNavigate();
