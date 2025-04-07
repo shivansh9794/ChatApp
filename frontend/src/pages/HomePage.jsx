@@ -13,7 +13,6 @@ const Home = () => {
   const [image, setImage] = useState(null);
   // const [user, setUser] = useState();
 
-
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
     setUser(userInfo);
