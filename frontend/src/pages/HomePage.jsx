@@ -6,8 +6,10 @@ import { baseUrl } from '../config/KeyConfig';
 
 
 const Home = () => {
-  const { user, setUser } = chatState();
+
   
+  const { user, setUser } = chatState();
+
   const navigate = useNavigate();
   const [loginState, setLoginState] = useState(true);
   const [formData, setFormData] = useState({});
