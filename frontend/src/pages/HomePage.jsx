@@ -59,7 +59,6 @@ const Home = () => {
     }
   }
 
-
   const loginCard = () => {
     return (
       <div className="flex h-auto py-2 w-auto px-20 rounded-b-xl bg-gray-300 flex-col justify-center">
