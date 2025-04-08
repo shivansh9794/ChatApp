@@ -4,6 +4,7 @@ import axios from 'axios';
 import io from 'socket.io-client'
 import ChatComponent from '../components/ChatComponent'
 import { baseUrl } from '../config/KeyConfig';
+import VideoCall from './VideoCall'
 
 const ENDPOINT = baseUrl;
 var socket, selectedChatCompare;
@@ -42,10 +43,13 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             setMessages(data);  // Update messages state with fetched data
             console.log('all msgs -->', data);
             socket.emit('join chat', selectedChat._id);
+
         } catch (error) {
             console.log("Error fetching messages:", error);
         }
     };
+
+
 
     useEffect(() => {
         fetchMessages();
@@ -117,19 +121,27 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             }
         }, timerLength);
     };
-    
-    let SenderName="";
-    if(selectedChat.isGroupChat==true){
-        SenderName=selectedChat.chatName;
+
+    let SenderName = "";
+    let chatId = 0;
+    if (selectedChat.isGroupChat == true) {
+        SenderName = selectedChat.chatName;
+        chatId = selectedChat._id;
+        console.log("chat ID==", chatId);
     }
-    else if(selectedChat?.users[1]._id==user._id){
-        SenderName=selectedChat?.users[0].name;
+    else if (selectedChat?.users[1]._id == user._id) {
+        SenderName = selectedChat?.users[0].name;
+        chatId = selectedChat._id;
+        console.log("chat ID==", chatId);
     }
-    else if(selectedChat?.users[0]._id==user._id){
-    SenderName=selectedChat?.users[1].name;
+    else if (selectedChat?.users[0]._id == user._id) {
+        SenderName = selectedChat?.users[1].name;
+
+        chatId = selectedChat._id;
+        console.log("chat ID==", chatId);
     }
-    else{
-        SenderName="Reload page to Load Name"
+    else {
+        SenderName = "Reload page to Load Name"
     }
 
     return (
@@ -156,7 +168,9 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 />
             </div>
 
-            {/* github */}
+            {/* <div className='absolute w-[60%] h-[50%] border-2 border-amber-300 m-3'>
+                {VideoCall(SenderName,chatId)}
+            </div> */}
         </div>
 
 
