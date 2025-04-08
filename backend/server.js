@@ -8,6 +8,7 @@ import messageRoutes from './routes/messageRoutes.js'
 
 connectDB();
 const app = express();
+const port=8000;
 app.use(express.json())
 app.use(cors('*'));
 
@@ -18,8 +19,8 @@ app.use('/api/user', userRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/message', messageRoutes);
 
-const server = app.listen(8000, () => {
-    console.log("SERVER IS RUNNING");
+const server = app.listen(port, () => {
+    console.log(`SERVER IS RUNNING ON PORT ${port} `);
 });
 
 const io = new Server(server, {
