@@ -4,6 +4,9 @@ import User from '../model/userModel.js';
 
 export const accessChat = asyncHandler(async(req,res) => {
     const {userId} = req.body;
+
+    console.log("Id is--->",userId);
+    
     if(!userId) {
         console.log("User ID param not sent with request");
         return res.sendStatus(400);
