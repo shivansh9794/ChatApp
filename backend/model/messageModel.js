@@ -48,7 +48,26 @@ const messageModel = mongoose.Schema({
     resource_type: String,
     folder: String,
     uploaded_at: Date
-  }
+  },
+
+  reactions: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      emoji: {
+        type: String,
+        required: true
+      },
+      reactedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ]
+
+
 }, { timestamps: true });
 
 const Message = mongoose.model("Message", messageModel);
