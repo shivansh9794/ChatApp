@@ -148,6 +148,62 @@ export const sendMessage = asyncHandler(async (req, res) => {
   }
 });
 
+
+export const reactToMessage = async (req, res) => {
+
+  console.log("____WORKING_____");
+  const { messageId } = req.params;
+  const { emoji } = req.body;
+  const userId = req.user._id;
+  console.log("MID-->",messageId);
+  console.log("EMJ-->",emoji);
+  console.log("UID-->",userId);
+
+  try {
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    // Check if user already reacted
+    const existingReactionIndex = message.reactions.findIndex(
+      (r) => r.user.toString() === userId.toString()
+    );
+
+    if (existingReactionIndex > -1) {
+      const existingEmoji = message.reactions[existingReactionIndex].emoji;
+
+      if (existingEmoji === emoji) {
+        // Toggle off the same reaction
+        message.reactions.splice(existingReactionIndex, 1);
+      } else {
+        // Update with new emoji
+        message.reactions[existingReactionIndex].emoji = emoji;
+        message.reactions[existingReactionIndex].reactedAt = new Date();
+      }
+    } else {
+      // Add new reaction
+      message.reactions.push({
+        user: userId,
+        emoji: emoji,
+        reactedAt: new Date()
+      });
+    }
+
+    await message.save();
+
+    const updatedMessage = await Message.findById(messageId)
+      .populate('reactions.user', 'username avatar') // adjust fields as needed
+      .exec();
+
+    res.status(200).json(updatedMessage);
+  } catch (error) {
+    console.error("Reaction error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const allMessages = asyncHandler(async (req, res) => {
   try {
     const messages = await Message.find({ chat: req.params.chatId })
