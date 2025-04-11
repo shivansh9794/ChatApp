@@ -57,10 +57,12 @@ cloudinary.v2.config({
 const uploadedFileMap = {};
 
 export const sendMessage = asyncHandler(async (req, res) => {
-  const chatId = req.body.chatId;
-  const content = req.body.content;
+
+  const { chatId, content ,replyOf} = req.body;
+
   console.log("ID->", chatId);
   console.log("Content->", content);
+  console.log("Reply of data->", replyOf);
   console.log("-->", req.file);
 
 
@@ -126,7 +128,8 @@ export const sendMessage = asyncHandler(async (req, res) => {
     content: content || '',
     chat: chatId,
     type: messageType,
-    attachment: attachmentData
+    attachment: attachmentData,
+    replyOf: replyOf || null
   };
 
   try {
@@ -134,6 +137,13 @@ export const sendMessage = asyncHandler(async (req, res) => {
 
     message = await message.populate("sender", "name pic");
     message = await message.populate("chat");
+    message = await message.populate({
+      path: "replyOf",
+      populate: {
+        path: "sender",
+        select: "username"
+      }
+    });
     message = await User.populate(message, {
       path: "chat.users",
       select: "name pic email",
@@ -208,7 +218,15 @@ export const allMessages = asyncHandler(async (req, res) => {
   try {
     const messages = await Message.find({ chat: req.params.chatId })
       .populate("sender", "name pic email")
-      .populate("chat");
+      .populate("chat")
+      .populate({
+        path: "replyOf",
+        select: "-reactions",
+        populate: {
+          path: "sender",
+          select: "name username"
+        }
+      });
     res.json(messages);
   } catch (error) {
     res.status(400);

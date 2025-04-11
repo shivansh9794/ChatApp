@@ -40,6 +40,10 @@ const messageModel = mongoose.Schema({
     enum: ['text', 'image', 'video', 'file', 'audio'],
     default: 'text'
   },
+  replyOf: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Message" 
+  },
   attachment: {
     fileHash: String,
     originalFilename: String,
