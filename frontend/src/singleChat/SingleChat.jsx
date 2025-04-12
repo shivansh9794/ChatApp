@@ -117,6 +117,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 setFile('');
                 setShowFileInput(false);
                 socket.emit("new message", data); // socket send data
+                setFetchAgain();
             } catch (error) {
                 console.log("Error sending message:", error);
             }

@@ -12,7 +12,10 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.0.8",
     "axios": "^1.8.1",
+    "cloudinary": "^2.6.0",
+    "dotenv": "^16.5.0",
     "frontend": "file:",
+    "mime-types": "^3.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-player": "^2.16.0",

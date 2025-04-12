@@ -33,7 +33,7 @@ export default function Formpage() {
         }
 
         try {
-            const { data } = await axios.post(`${baseUrl}/api/message`, formData, {
+            const { data } = await axios.post(`${baseUrl}/api/message/upload`, formData, {
                 headers: {
                     Authorization: `Bearer ${user.token}`,
                 },
