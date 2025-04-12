@@ -13,6 +13,8 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
     const { user, setUser, selectedChat } = chatState();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
+    const [file, setFile] = useState();
+    const [showFileInput, setShowFileInput] = useState(false);
     const [socketConnected, setSocketConnected] = useState(false);
     const [typing, setTyping] = useState(false);
     const [istyping, setIsTyping] = useState(false);
@@ -68,31 +70,52 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         })
     })
 
+
+    let [previewUrl, setPreview] = useState(null);
+
+
+    useEffect(() => {
+        if (file) {
+            previewUrl = URL.createObjectURL(file);
+            setPreview(previewUrl);
+        }
+        return () => {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [file]);
+
+
+
     // Send message handler
     const sendMessage = async (event) => {
         if (event.key === "Enter" && newMessage.trim()) {
 
+            const formData = new FormData();
+            formData.append("chatId", selectedChat._id);
+            formData.append("content", newMessage);
+            if (file) { formData.append("file", file) }
+
             socket.emit('stop typing', selectedChat._id)
+            for (let [key, value] of formData.entries()) {
+                console.log(`<><><>${key}:`, value);
+            }
 
             try {
                 const config = {
                     headers: {
-                        "Content-Type": "application/json",
+                        // "Content-Type": "application/json",
                         Authorization: `Bearer ${user.token}`,
                     },
                 };
 
-                const { data } = await axios.post(`${baseUrl}/api/message`, {
-                    content: newMessage,
-                    chatId: selectedChat._id,  // Make sure you send the chat ID properly
-                },
-                    config
-                );
-
-                // After successfully sending the message, update messages state
+                const { data } = await axios.post(`${baseUrl}/api/message`, formData, config)
+                console.log("<<<<<<---->>>>>>", data);
                 setMessages(prevMessages => [...prevMessages, data]);
-                setNewMessage("");  // Clear the input field
-                console.log(data);
+                setNewMessage("");
+                setFile('');
+                setShowFileInput(false);
                 socket.emit("new message", data); // socket send data
             } catch (error) {
                 console.log("Error sending message:", error);
@@ -144,6 +167,16 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         SenderName = "Reload page to Load Name"
     }
 
+
+
+    const handleFileChange = (e) => {
+        setSelectedFile(e.target.files[0]);
+    };
+
+    const toggleFileInput = () => {
+        setShowFileInput((prev) => !prev);
+    };
+
     return (
         <div className="bg-gray-300 border-l-2 border-r-2 border-b-2 h-[91vh] w-full flex flex-col justify-end">
             <div className='w-full p-2 bg-gray-300 shadow-lg '>
@@ -158,7 +191,8 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             {istyping ? (<div className='font-bold text-black font-mono bg-transparent w-auto '>Typing...</div>) : (<></>)}
 
             {/* Message Input */}
-            <div className="w-full max-w-full flex-col items-end mt-4">
+            {/* <div className="w-full max-w-full flex-col items-end mt-4">
+
                 <input
                     className="w-full placeholder:text-black text-black text-sm border border-slate-200 bg-gray-400 px-3 py-4 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
                     placeholder="Type here..."
@@ -166,6 +200,61 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                     value={newMessage}
                     onKeyDown={sendMessage}  // Send message when Enter is pressed
                 />
+            </div> */}
+
+            <div className="w-full max-w-full flex-col items-end mt-4">
+                {/* File input (conditionally rendered) */}
+                {showFileInput && (
+                    // <div className="mt-2 h-20 rounded-t-2xl w-full flex flex-col gap-2">
+                    //     <input
+                    //         type="file"
+                    //         onChange={(e) => setFile(e.target.files[0])}
+                    //         className="block w-full h-5 text-sm text-gray-900 bg-gray-200 rounded border border-gray-300 cursor-pointer"
+                    //     />
+                    //     {/* {file && (<p className="text-xs h-10 text-gray-700">Selected: {file.name}</p>)} */}
+                    //     {file && (<img src={file}/>)}
+                    // </div>
+                    <div className="mt-2 h-auto rounded-t-2xl w-full flex flex-col gap-2">
+                        <input
+                            type="file"
+                            onChange={(e) => {
+                                const selected = e.target.files[0];
+                                setFile(selected);
+                            }}
+                            className="block w-full h-10 text-sm text-gray-900 bg-gray-200 rounded border border-gray-300 cursor-pointer"
+                        />
+
+                        {file && (
+                            <img
+                                src={URL.createObjectURL(file)}
+                                alt="Preview"
+                                className="h-[30%] w-[30%] object-contain rounded"
+                            />
+                        )}
+                    </div>
+                )}
+
+
+                <div className="flex w-full items-center space-x-2">
+                    {/* + Button */}
+                    <button
+                        onClick={toggleFileInput}
+                        className="w-10 h-10 flex items-center justify-center bg-slate-300 text-black font-bold text-xl rounded shadow hover:bg-slate-400 transition"
+                    >
+                        +
+                    </button>
+
+                    {/* Message input */}
+                    <input
+                        className="flex-1 placeholder:text-black text-black text-sm border border-slate-200 bg-gray-400 px-3 py-4 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
+                        placeholder="Type your message..."
+                        onChange={typingHandler}
+                        value={newMessage}
+                        onKeyDown={sendMessage} // Send message when Enter is pressed
+                    />
+                </div>
+
+
             </div>
 
             {/* <div className='absolute w-[60%] h-[50%] border-2 border-amber-300 m-3'>

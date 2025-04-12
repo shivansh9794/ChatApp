@@ -6,7 +6,7 @@ import Search from './search/Search'
 import Ques from './Questions/Ques'
 import Cam from './components/Camera'
 import Online from './pages/Online'
-
+import Formpage from './components/form'
 
 function App() {
     return (
@@ -17,6 +17,7 @@ function App() {
             <Route path='/search' element={<Search />} />
             <Route path='/ask' element={<Ques/>}/>
             <Route path='/cam' element={<Cam/>}/>
+            <Route path='/form' element={<Formpage/>}/>
         </Routes>
     )
 }

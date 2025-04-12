@@ -46,7 +46,6 @@ import cloudinary from "cloudinary";
 
 // Setup cloudinary
 
-
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -63,7 +62,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
   console.log("ID->", chatId);
   console.log("Content->", content);
   console.log("Reply of data->", replyOf);
-  console.log("-->", req.file);
+  console.log("File->", req.file);
 
 
   if (!chatId) {
@@ -99,7 +98,10 @@ export const sendMessage = asyncHandler(async (req, res) => {
       fs.unlink(filePath, () => { });
 
       // Set message type based on resource_type
+      
       const resType = cloudinaryResult.resource_type;
+      console.log(resType);
+
       if (resType === 'image') messageType = 'image';
       else if (resType === 'video') messageType = 'video';
       else if (resType === 'raw') messageType = 'file';
@@ -158,7 +160,6 @@ export const sendMessage = asyncHandler(async (req, res) => {
   }
 });
 
-
 export const reactToMessage = async (req, res) => {
 
   console.log("____WORKING_____");
@@ -213,6 +214,56 @@ export const reactToMessage = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const forwardMessage = asyncHandler(async (req, res) => {
+  const { messageId, targetChatId } = req.body;
+
+  if (!messageId || !targetChatId) {
+    return res.status(400).json({ message: "Missing messageId or targetChatId" });
+  }
+
+  // Fetch the original message
+  const originalMessage = await Message.findById(messageId);
+  if (!originalMessage) {
+    return res.status(404).json({ message: "Original message not found" });
+  }
+
+  // Create a new message using original's content
+  const newMessage = {
+    sender: req.user._id, // person forwarding it
+    content: originalMessage.content,
+    type: originalMessage.type,
+    attachment: originalMessage.attachment || null,
+    chat: targetChatId,
+    replyOf: null // forwarded messages aren't replies by default
+  };
+
+  try {
+    let message = await Message.create(newMessage);
+
+    message = await message.populate("sender", "name pic");
+    message = await message.populate("chat");
+
+    message = await message.populate({
+      path: "replyOf",
+      populate: {
+        path: "sender",
+        select: "username"
+      }
+    });
+
+    message = await User.populate(message, {
+      path: "chat.users",
+      select: "name pic email"
+    });
+
+    await Chat.findByIdAndUpdate(targetChatId, { latestMessage: message });
+
+    res.status(201).json({ success: true, message });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to forward message", error: error.message });
+  }
+});
 
 export const allMessages = asyncHandler(async (req, res) => {
   try {
