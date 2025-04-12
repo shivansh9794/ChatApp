@@ -5,46 +5,8 @@ import Chat from "../model/chatModel.js";
 import fs from "fs";
 import crypto from "crypto";
 import cloudinary from "cloudinary";
-
-
-// Old Only Send Msg Controler
-// export const sendMessage = asyncHandler(async (req, res) => {
-//     const { content, chatId } = req.body;
-
-//     if (!content || !chatId) {
-//         console.log("Invalid data passed into request");
-//         return res.sendStatus(400);
-//     }
-
-//     var newMessage = {
-//         sender: req.user._id,
-//         content: content,
-//         chat: chatId,
-//     }
-
-//     try {
-//         var message = await Message.create(newMessage)
-
-//         message = await message.populate("sender", "name pic");
-//         message = await message.populate("chat");
-//         message = await User.populate(message, {
-//             path: "chat.users",
-//             select: "name pic email",
-//         })
-
-//         await Chat.findByIdAndUpdate(req.body.chatId, {
-//             latestMessage: message
-//         })
-
-//         res.json(message);
-//     } catch (error) {
-//         res.status(400);
-//         throw new error(error.message);
-//     }
-// });
-
-
-// Setup cloudinary
+import mime from 'mime-types';
+import path from 'path';
 
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -52,9 +14,55 @@ cloudinary.v2.config({
   api_secret: process.env.CLOUDINARY_SECRET_KEY
 });
 
+// Test for Cloudinary
+async function uploadToCloudinary(filePath) {
+  const mimeType = mime.lookup(filePath); 
+  let resourceType = 'auto'; 
+        
+  if (!mimeType) {
+    console.warn('Could not detect MIME type, using "raw" as fallback.');
+    resourceType = 'raw';
+  } else if (mimeType.startsWith('image/')) {
+    resourceType = 'image';
+  } else if (mimeType.startsWith('video/') || mimeType.startsWith('audio/')) {
+    resourceType = 'video';
+  } else {
+    resourceType = 'raw';
+  }
+
+  try {
+    const result = await cloudinary.uploader.upload(filePath, {
+      resource_type: resourceType,
+      folder: 'Chat',
+      use_filename: true,
+      unique_filename: false
+    });
+    console.log('Upload successful:', result.secure_url);
+    console.log("-->",result);
+    return result;
+  } catch (error) {
+    console.error('Upload failed:', error.message);
+    throw error;
+  }
+}
+// Clodinary Test
+export const uploadFile = asyncHandler(async (req, res, next) => {
+  try{
+  if (req.file) {
+    const result = uploadToCloudinary(req.file.path);
+    console.log(result);
+    res.status(200).json(result);
+  }}catch(err){
+    res.status(404).json("No file found");
+  }
+  
+});
+
+
 // In-memory cache for file hashes
 const uploadedFileMap = {};
 
+// Send Message API
 export const sendMessage = asyncHandler(async (req, res) => {
 
   const { chatId, content ,replyOf} = req.body;
@@ -77,6 +85,19 @@ export const sendMessage = asyncHandler(async (req, res) => {
     try {
       const filePath = req.file.path;
 
+      const mimeType = mime.lookup(filePath); 
+      let resourceType = 'auto'; 
+      if (!mimeType) {
+        console.warn('Could not detect MIME type, using "raw" as fallback.');
+        resourceType = 'raw';
+      } else if (mimeType.startsWith('image/')) {
+        resourceType = 'image';
+      } else if (mimeType.startsWith('video/') || mimeType.startsWith('audio/')) {
+        resourceType = 'video';
+      } else {
+        resourceType = 'raw';
+      }
+
       // Generate hash
       const fileBuffer = fs.readFileSync(filePath);
       const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
@@ -87,7 +108,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
       if (!cloudinaryResult) {
         // Upload to Cloudinary
         cloudinaryResult = await cloudinary.v2.uploader.upload(filePath, {
-          resource_type: 'auto',
+          resource_type: resourceType,
           folder: 'Chat'
         });
 
@@ -160,6 +181,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
   }
 });
 
+// React to mesaage
 export const reactToMessage = async (req, res) => {
 
   console.log("____WORKING_____");
