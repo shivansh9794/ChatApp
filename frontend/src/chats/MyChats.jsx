@@ -9,6 +9,7 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
   const { user, selectedChat, setSelectedChat, chats, setChats } = chatState();
   const [loggedUser, setLoggedUser] = useState();
   const [openAddGroup, setOpenAddGroup] = useState(false);
+  const [groupUserList,setGroupUserList]=useState([]);
 
   const fetchChats = async () => {
     try {
@@ -56,8 +57,9 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
                       }`}
                     onClick={() => {
                       setSelectedChat(chat);
-                      setShowChatPage(true);
+                      // setShowChatPage(true);
                     }}
+                    
                     key={chat._id}
                   >
                     <h1 className="text-xl text-black font-bold">
