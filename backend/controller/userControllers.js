@@ -82,4 +82,3 @@ export const deleteUser = asyncHandler(async (req, res) => {
     }
     
 });
-
