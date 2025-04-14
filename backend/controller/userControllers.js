@@ -71,7 +71,6 @@ export const allUsers = asyncHandler(async (req, res) => {
     res.send(users)
 });
 
-
 export const deleteUser = asyncHandler(async (req, res) => {
 
     try {
