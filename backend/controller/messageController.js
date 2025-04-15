@@ -287,10 +287,16 @@ export const forwardMessage = asyncHandler(async (req, res) => {
   }
 });
 
+
+// Fetch all messages
+
 export const allMessages = asyncHandler(async (req, res) => {
+  const chatId = req.params.chatId;
+  const userId = req.user._id;
+
   try {
-    const messages = await Message.find({ chat: req.params.chatId })
-      .populate("sender", "name pic email")
+    let messages = await Message.find({ chat: chatId })
+      .populate("sender", "name")
       .populate("chat")
       .populate({
         path: "replyOf",
@@ -300,12 +306,29 @@ export const allMessages = asyncHandler(async (req, res) => {
           select: "name username"
         }
       });
-    res.json(messages);
+
+    // Update seenBy field for unseen messages
+    const updatePromises = messages.map(msg => {
+      if (!msg.seenBy?.includes(userId) && msg?.sender?._id !== userId) {
+        return Message.findByIdAndUpdate(
+          msg._id,
+          { $addToSet: { seenBy: userId } },
+          { new: true }
+        );
+      }
+      return msg;
+    });
+
+    // Wait for all updates to finish
+    const updatedMessages = await Promise.all(updatePromises);
+
+    res.json(updatedMessages);
   } catch (error) {
     res.status(400);
     throw new Error(error.message);
   }
 });
+
 
 export const deleteMessage = asyncHandler(async (req, res) => {
   const { messageId } = req.params;

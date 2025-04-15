@@ -69,8 +69,14 @@ const messageModel = mongoose.Schema({
         default: Date.now
       }
     }
-  ]
+  ],
 
+  seenBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "UserAuth"
+    }
+  ]
 
 }, { timestamps: true });
 
