@@ -146,18 +146,14 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
     if (selectedChat.isGroupChat == true) {
         SenderName = selectedChat.chatName;
         chatId = selectedChat._id;
-        console.log("chat ID==", chatId);
     }
     else if (selectedChat?.users[1]._id == user._id) {
         SenderName = selectedChat?.users[0].name;
         chatId = selectedChat._id;
-        console.log("chat ID==", chatId);
     }
     else if (selectedChat?.users[0]._id == user._id) {
         SenderName = selectedChat?.users[1].name;
-
         chatId = selectedChat._id;
-        console.log("chat ID==", chatId);
     }
     else {
         SenderName = "Reload page to Load Name"

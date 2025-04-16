@@ -30,19 +30,18 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
     }
   }
 
-
   if (!user) return
   else {
     useEffect(() => {
       setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
       let data = JSON.parse(localStorage.getItem("userInfo"));
       socket = io(ENDPOINT);
-      socket.emit("setupChat",data);
+      socket.emit("setupChat", data);
       fetchChats();
     }, [fetchAgain]);
   }
 
-
+  // Adding new Notification
   useEffect(() => {
     if (!socket) return;
     socket.on("increment unseen", ({ chatId }) => {
@@ -60,12 +59,10 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
     };
   }, [socket, user]);
 
-
+  // Clearing Unread Messages
   useEffect(() => {
     if (!socket) return;
-    socket.on("update unread count", ({ chatId , count }) => {
-      console.log("Resetting Counter to 0");
-      
+    socket.on("update unread count", ({ chatId, count }) => {
       setChats((prevChats) =>
         prevChats.map((chat) =>
           chat._id === chatId
@@ -78,13 +75,12 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
     return () => {
       socket.off("update unread count");
     };
-  }, [socket, user]);
+  }, [socket]);
 
-
-  
 
   return (
     <div className='bg-gray-300 w-full h-full border-b-2  border-r-2'>
+
       {/* Chats Header */}
       <div className='bg-gray-300 shadow-lg w-full p-2 flex justify-between'>
         <h1 className='text-xl font-bold'>My Chats</h1>
@@ -127,14 +123,23 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
             {
               chats?.map((chat) => {
                 return (
-                  <div className={`cursor-pointer py-3 rounded-lg p-2 m-2 ${selectedChat === chat ? 'bg-green-300' : 'bg-blue-50'}`} onClick={() => { setSelectedChat(chat), setShowChatPage(true) }} key={chat._id}>
-                    <h1 className='text-xl text-black font-bold '>{!chat.isGroupChat ? (getSender(loggedUser, chat.users)) : (chat.chatName)}</h1>
-                    <h6 className={`${(chat?.latestMessage?.sender?._id == user?._id) ? "text-green-700" : "text-blue-800"}`}>{chat?.latestMessage?.content}</h6>
-                    {chat?.unreadCount > 0 && (
-                      <span className="ml-2 text-xs bg-red-600 text-white px-2 py-1 rounded-full">
-                        {chat.unreadCount}
-                      </span>
-                    )}
+                  <div
+                    onClick={() => { setSelectedChat(chat), setShowChatPage(true) }} key={chat._id}
+                    className={`cursor-pointer py-3 rounded-lg p-2 m-2 ${selectedChat?._id === chat?._id ? 'bg-green-300' : 'bg-blue-50'} flex justify-between items-center`}
+                  >
+
+                    <div>
+                      <h1 className='text-xl text-black font-bold '>{!chat.isGroupChat ? (getSender(loggedUser, chat.users)) : (chat.chatName)}</h1>
+                      <h6 className={`${(chat?.latestMessage?.sender?._id === setLoggedUser?._id) ? "text-green-700" : "text-blue-800"}`}>{chat?.latestMessage?.content}</h6>
+                    </div>
+                    <div>
+                      {chat?.unreadCount > 0 && (
+                        <span className="ml-2 text-xs bg-red-600 text-white px-2 py-1 rounded-full">
+                          {chat.unreadCount}
+                        </span>
+                      )}
+                    </div>
+
                   </div>
                 )
               })
@@ -148,7 +153,6 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
         )
         }
       </div>
-
 
     </div >
   )
