@@ -18,12 +18,12 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
     const [socketConnected, setSocketConnected] = useState(false);
     const [typing, setTyping] = useState(false);
     const [istyping, setIsTyping] = useState(false);
-
+    let Userdata;
 
     useEffect(() => {
-        let data = JSON.parse(localStorage.getItem("userInfo"));
+        Userdata = JSON.parse(localStorage.getItem("userInfo"));
         socket = io(ENDPOINT);
-        socket.emit("setup", data);
+        socket.emit("setup", Userdata);
         socket.on("connected", () => setSocketConnected(true))
         socket.on("typing", () => setIsTyping(true));
         socket.on("stop typing", () => setIsTyping(false));
@@ -32,8 +32,8 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
 
     // Fetch messages when selectedChat changes
     const fetchMessages = async () => {
-        if (!selectedChat) return; // No chat selected, exit early
 
+        if (!selectedChat) return;         
         try {
             const config = {
                 headers: {
@@ -45,13 +45,17 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             setMessages(data);  // Update messages state with fetched data
             console.log('all msgs -->', data);
             socket.emit('join chat', selectedChat._id);
-
         } catch (error) {
             console.log("Error fetching messages:", error);
         }
     };
 
-
+    // Set mark as seen when we refetch the message 
+    useEffect(()=>{
+        Userdata = JSON.parse(localStorage.getItem("userInfo"));
+        socket.emit("mark seen",{"chatId":selectedChat._id,"userId":Userdata?._id})
+        // console.log("Hiii")
+    },[messages]);
 
     useEffect(() => {
         fetchMessages();
@@ -70,10 +74,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         })
     })
 
-
     let [previewUrl, setPreview] = useState(null);
-
-
     useEffect(() => {
         if (file) {
             previewUrl = URL.createObjectURL(file);
@@ -86,8 +87,6 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         };
     }, [file]);
 
-
-
     // Send message handler
     const sendMessage = async (event) => {
         if (event.key === "Enter" && newMessage.trim()) {
@@ -98,9 +97,6 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             if (file) { formData.append("file", file) }
 
             socket.emit('stop typing', selectedChat._id)
-            for (let [key, value] of formData.entries()) {
-                console.log(`<><><>${key}:`, value);
-            }
 
             try {
                 const config = {
@@ -111,7 +107,6 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 };
 
                 const { data } = await axios.post(`${baseUrl}/api/message`, formData, config)
-                console.log("<<<<<<---->>>>>>", data);
                 setMessages(prevMessages => [...prevMessages, data]);
                 setNewMessage("");
                 setFile('');
@@ -167,7 +162,6 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
     else {
         SenderName = "Reload page to Load Name"
     }
-
 
 
     const handleFileChange = (e) => {
@@ -262,8 +256,6 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 {VideoCall(SenderName,chatId)}
             </div> */}
         </div>
-
-
     );
 };
 

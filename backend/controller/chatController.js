@@ -1,6 +1,8 @@
 import asyncHandler from 'express-async-handler';
 import Chat from '../model/chatModel.js'
 import User from '../model/userModel.js';
+import Message from "../model/messageModel.js";
+
 
 export const accessChat = asyncHandler(async(req,res) => {
     const {userId} = req.body;
@@ -46,28 +48,67 @@ export const accessChat = asyncHandler(async(req,res) => {
     }
 })
 
-export const fetchChats = asyncHandler(async(req, res) => {
-    try {
-        Chat.find({users: { $elemMatch: { $eq: req.user._id}}})
-        .populate("users", "-password")
-        .populate("groupAdmin", "-password")
-        .populate("latestMessage")
-        .sort({updatedAt: -1})
-        .then(async(results) => {
-            results = await User.populate(results, {
-                path: "latestMessage.sender",
-                select:"name pic email",
-            });
-            res.status(200).send(results);
-        })
-    } catch (error) {
-        res.status(400);
-        throw new Error(error.message);
-    }
-})
+// export const fetchChats = asyncHandler(async(req, res) => {
+//     try {
+//         Chat.find({users: { $elemMatch: { $eq: req.user._id}}})
+//         .populate("users", "-password")
+//         .populate("groupAdmin", "-password")
+//         .populate("latestMessage")
+//         .sort({updatedAt: -1})
+//         .then(async(results) => {
+//             results = await User.populate(results, {
+//                 path: "latestMessage.sender",
+//                 select:"name pic email",
+//             });
+//             res.status(200).send(results);
+//         })
+//     } catch (error) {
+//         res.status(400);
+//         throw new Error(error.message);
+//     }
+// })
 
 // Group routes
 
+
+export const fetchChats = asyncHandler(async (req, res) => {
+    try {
+      const userId = req.user._id;
+  
+      let chats = await Chat.find({ users: { $elemMatch: { $eq: userId } } })
+        .populate("users", "-password")
+        .populate("groupAdmin", "-password")
+        .populate("latestMessage")
+        .sort({ updatedAt: -1 });
+  
+      chats = await User.populate(chats, {
+        path: "latestMessage.sender",
+        select: "name",
+      });
+  
+      // Add unread message count for each chat
+      const chatsWithUnreadCount = await Promise.all(
+        chats.map(async (chat) => {
+          const unreadCount = await Message.countDocuments({
+            chat: chat._id,
+            sender: { $ne: userId },
+            seenBy: { $ne: userId },
+          });
+  
+          return {
+            ...chat.toObject(),
+            unreadCount,
+          };
+        })
+      );
+  
+      res.status(200).send(chatsWithUnreadCount);
+    } catch (error) {
+      res.status(400);
+      throw new Error(error.message);
+    }
+});
+  
 export const createGroupChat = asyncHandler(async(req,res) => {
     if(!req.body.users || !req.body.name) {
         return res.status(400).send({message:"Please fill all the fields"})

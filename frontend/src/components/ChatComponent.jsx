@@ -74,7 +74,7 @@ function ChatComponent({ messages }) {
 
             <strong>{message?.sender?.name}:</strong> {message?.content}
 
-            <h1>{(message.createdAt).split("T")[1].slice(0, 5)}</h1>
+            <h1>{ message?.createdTime || (message.createdAt).split("T")[1].slice(0, 5)}</h1>
             {message.reactions != null ? <a className='rounded-full bg-black font-bold text-center'>{message?.reactions[0]?.emoji}</a> : ""}
 
           </div>

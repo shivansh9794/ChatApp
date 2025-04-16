@@ -158,7 +158,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
   try {
     let message = await Message.create(newMessage);
 
-    message = await message.populate("sender", "name pic");
+    message = await message.populate("sender","name");
     message = await message.populate("chat");
     message = await message.populate({
       path: "replyOf",
@@ -169,7 +169,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
     });
     message = await User.populate(message, {
       path: "chat.users",
-      select: "name pic email",
+      select: "name",
     });
 
     await Chat.findByIdAndUpdate(chatId, { latestMessage: message });

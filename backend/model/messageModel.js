@@ -1,25 +1,3 @@
-// import mongoose from "mongoose";
-
-// const messageModel = mongoose.Schema({
-//     sender:{
-//         type: mongoose.Schema.Types.ObjectId,
-//         ref:"User"
-//     },
-//     content:{
-//         type: String,
-//         trim: true
-//     },
-//     chat:{
-//         type:mongoose.Schema.Types.ObjectId,
-//         ref:"Chat"
-//     }
-// },{timestamps:true})
-
-// const Message = mongoose.model("Message", messageModel);
-
-// export default Message;
-
-
 import mongoose from "mongoose";
 
 const messageModel = mongoose.Schema({
@@ -76,8 +54,25 @@ const messageModel = mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: "UserAuth"
     }
-  ]
+  ],
 
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  
+  createdTime: {
+    type: String,
+    default: () => {
+      const now = new Date();
+      return now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    }
+  }
+  
 }, { timestamps: true });
 
 const Message = mongoose.model("Message", messageModel);
