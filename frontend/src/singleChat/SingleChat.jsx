@@ -170,10 +170,11 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
 
     return (
         <div className="bg-gray-300 border-l-2 border-r-2 border-b-2 h-[91vh] w-full flex flex-col justify-end">
+            
+            {/* Message Page Header */}
             <div className='w-full p-2 bg-gray-300 shadow-lg '>
                 <h1 className='font-bold text-2xl'>{SenderName}</h1>
             </div>
-
 
             {/* Message Container */}
             <ChatComponent messages={messages} user={user}></ChatComponent>
@@ -182,17 +183,6 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             {istyping ? (<div className='font-bold text-black font-mono bg-transparent w-auto '>Typing...</div>) : (<></>)}
 
             {/* Message Input */}
-            {/* <div className="w-full max-w-full flex-col items-end mt-4">
-
-                <input
-                    className="w-full placeholder:text-black text-black text-sm border border-slate-200 bg-gray-400 px-3 py-4 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
-                    placeholder="Type here..."
-                    onChange={typingHandler}
-                    value={newMessage}
-                    onKeyDown={sendMessage}  // Send message when Enter is pressed
-                />
-            </div> */}
-
             <div className="w-full max-w-full flex-col items-end mt-4">
                 {/* File input (conditionally rendered) */}
                 {showFileInput && (
@@ -248,9 +238,11 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
 
             </div>
 
+            {/* Video Call */}
             {/* <div className='absolute w-[60%] h-[50%] border-2 border-amber-300 m-3'>
                 {VideoCall(SenderName,chatId)}
             </div> */}
+            
         </div>
     );
 };

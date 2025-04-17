@@ -13,7 +13,44 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
   const [loggedUser, setLoggedUser] = useState();
   const [openAddGroup, setOpenAddGroup] = useState(false);
   const [groupUserList, setGroupUserList] = useState([]);
+  const [groupName,setGropuName]=useState('');
 
+  useEffect(()=>{
+    setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
+  },[]);
+
+  const addToGroupUserList = (chatId) => {
+    setGroupUserList((prevList) =>
+      prevList.includes(chatId)
+        ? prevList.filter(id => id !== chatId)
+        : [...prevList, chatId]
+    );
+  };
+
+  const createGroup=async()=>{
+    try {
+
+      const payload = {
+        name: groupName,
+        users: JSON.stringify(groupUserList), // 👈 this is crucial!
+      };
+
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${(JSON.parse(localStorage.getItem("userInfo"))).token}`,
+        },
+      };
+      
+      const { data } = await axios.post(`${baseUrl}/api/chat/group`,payload,config);
+      fetchChats();
+      setOpenAddGroup(false);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // Fetch All Chats
   const fetchChats = async () => {
     try {
       const config = {
@@ -29,11 +66,9 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
       setFetchAgain(true);
     }
   }
-
   if (!user) return
   else {
     useEffect(() => {
-      setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
       let data = JSON.parse(localStorage.getItem("userInfo"));
       socket = io(ENDPOINT);
       socket.emit("setupChat", data);
@@ -89,31 +124,55 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
 
       {/* Open Add to group Toggle */}
       {openAddGroup &&
-        <div className='z-50 bg-gray-400 absolute top-31 left-0.5 w-[30%] h-[300px] rounded-xl'>
-          <h1 className='font-bold text-xl font-sans p-3 text-green-700'>Add to group</h1>
-          <div className='overflow-y-auto max-h-[250px]'>
-            {chats
-              ?.filter(chat => !chat.isGroupChat) //  only including non-group chats
-              .map(chat => {
-                return (
-                  <div
-                    className={`cursor-pointer py-3 rounded-lg p-2 m-2 ${selectedChat === chat ? 'bg-green-300' : 'bg-blue-50'
-                      }`}
-                    onClick={() => {
-                      setSelectedChat(chat);
-                      // setShowChatPage(true);
-                    }}
+        
+        <div className='z-50 bg-gray-400 absolute top-31 left-[40%] w-[30%] h-[400px] rounded-xl flex flex-col justify-start items-center p-4'>
+          <h1 className='font-bold text-xl font-sans text-green-700 mb-2'>Create New Group</h1>
 
-                    key={chat._id}
+          <h2 className='text-md font-bold text-blue-900 self-start'>Enter Group Name</h2>
+          {/* Group Name Input */}
+          <input
+            type='text'
+            value={groupName}
+            onChange={(e)=>setGropuName(e.target.value)}
+            className='w-full p-2 mb-3 rounded-md border font-bold border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500'
+          />
+
+          {/* Select Users Heading */}
+          <h2 className='text-md font-semibold text-blue-900 self-start pl-2'>Select Users</h2>
+
+          {/* User List */}
+          <div className='overflow-y-auto hide-scrollbar w-full h-[199px] mt-1'>
+            {chats
+              ?.filter(chat => !chat.isGroupChat)
+              .map(chat => (
+                <div
+                  key={chat._id}
+                  className={`cursor-pointer py-3 rounded-lg p-2 m-2 ${groupUserList.includes(chat._id) ? 'bg-green-300' : 'bg-blue-100'
+                    }`}
+                  onClick={() => addToGroupUserList(getSender(loggedUser, chat.users))}
+                >
+                  <h1
+                    className={`text-xl font-bold ${groupUserList.includes(chat._id) ? 'text-green-800' : 'text-black'
+                      }`}
                   >
-                    <h1 className="text-xl text-black font-bold">
-                      {getSender(loggedUser, chat.users)}
-                    </h1>
-                  </div>
-                );
-              })}
+                    {getSender(loggedUser, chat.users)}
+                  </h1>
+                </div>
+              ))}
           </div>
+
+          <div className='flex justify-end w-full gap-2'>
+            <button className='mt-4 w-[50%] bg-red-800 h-10 rounded-lg hover:bg-red-600 font-bold text-white' onClick={() => setOpenAddGroup((prev) => !prev)}>
+              Cancel
+            </button>
+            <button className='w-[50%] mt-4 bg-green-800 h-10 rounded-lg hover:bg-green-600 font-bold text-white' onClick={()=>createGroup()}>
+              Create A Group
+            </button>
+          </div>
+          {/* Create Button */}
+
         </div>
+
       }
 
       {/* All the Chats */}
@@ -130,7 +189,7 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
 
                     <div>
                       <h1 className='text-xl text-black font-bold '>{!chat.isGroupChat ? (getSender(loggedUser, chat.users)) : (chat.chatName)}</h1>
-                      <h6 className={`${(chat?.latestMessage?.sender?._id === setLoggedUser?._id) ? "text-green-700" : "text-blue-800"}`}>{chat?.latestMessage?.content}</h6>
+                      <h6 className={`${(chat?.latestMessage?.sender?._id === loggedUser?._id) ? "text-green-700" : "text-blue-800"}`}>{chat?.latestMessage?.content}</h6>
                     </div>
                     <div>
                       {chat?.unreadCount > 0 && (

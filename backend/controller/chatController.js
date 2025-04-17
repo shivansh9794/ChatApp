@@ -121,6 +121,8 @@ export const createGroupChat = asyncHandler(async(req,res) => {
 
     users.push(req.user); // adding currently Logged in user to a Group
 
+    console.log("++",users);
+    
     try {
         const groupChat = await Chat.create({
             chatName: req.body.name,
