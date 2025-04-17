@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { chatState } from '../context/chatProvider'
 import axios from 'axios';
 import io from 'socket.io-client'
-import { getSender } from '../config/ChatLogics'
+import { getSender, getSenderId } from '../config/ChatLogics'
 import { baseUrl } from '../config/KeyConfig';
 
 const ENDPOINT = baseUrl;
@@ -14,6 +14,9 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
   const [openAddGroup, setOpenAddGroup] = useState(false);
   const [groupUserList, setGroupUserList] = useState([]);
   const [groupName,setGropuName]=useState('');
+
+  console.log(groupUserList);
+  
 
   useEffect(()=>{
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
@@ -147,9 +150,9 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
               .map(chat => (
                 <div
                   key={chat._id}
-                  className={`cursor-pointer py-3 rounded-lg p-2 m-2 ${groupUserList.includes(chat._id) ? 'bg-green-300' : 'bg-blue-100'
+                  className={`cursor-pointer py-3 rounded-lg p-2 m-2 ${groupUserList.includes(getSenderId(loggedUser, chat.users)) ? 'bg-green-300' : 'bg-blue-100'
                     }`}
-                  onClick={() => addToGroupUserList(getSender(loggedUser, chat.users))}
+                  onClick={() => addToGroupUserList(getSenderId(loggedUser, chat.users))}
                 >
                   <h1
                     className={`text-xl font-bold ${groupUserList.includes(chat._id) ? 'text-green-800' : 'text-black'
