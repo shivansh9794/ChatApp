@@ -4,8 +4,6 @@ import protect from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-//Add protect in every routes
-
 router.route("/").post( protect, accessChat);
 router.route("/").get(protect, fetchChats);
 router.route("/group").post(protect, createGroupChat);
