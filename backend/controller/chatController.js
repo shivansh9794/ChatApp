@@ -161,40 +161,64 @@ export const renameGroup = asyncHandler(async(req,res) => {
     }
 })
 
-export const addToGroup = asyncHandler(async(req,res) => {
-    const {chatId, userId} = req.body;
+export const addToGroup = asyncHandler(async (req, res) => {
+    const { chatId, userId } = req.body;
 
-    const added  = await Chat.findByIdAndUpdate(chatId, {
-        $push: {users:userId},
+    if (!chatId || !userId) {
+        res.status(400);
+        throw new Error("chatId and userId are required");
+    }
 
-    }, {new:true})
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+        res.status(404);
+        throw new Error("Chat not found");
+    }
+
+    // Checking if the user is already in the group or not
+    if (chat.users.includes(userId)) {
+        res.status(400).json({
+            message: "User Is Already Added to group",
+        })
+        throw new Error("User already in the group");
+    }
+
+    // Adding user to group
+    const updatedChat = await Chat.findByIdAndUpdate(
+        chatId,
+        { $push: { users: userId } },
+        { new: true }
+    )
     .populate("users", "-password")
     .populate("groupAdmin", "-password");
 
-    if(!added){
-        res.status(404);
-        throw new Error("Chat not Found");
-    }else{
-        res.json(added);
+    res.status(200).json({
+        message: "User added to group successfully",
+        chat: updatedChat,
+    });
+});
+
+export const removeFromGroup = asyncHandler(async (req, res) => {
+    const { chatId, userId } = req.body;
+
+    if (!chatId || !userId) {
+        res.status(400);
+        throw new Error("chatId and userId are required");
     }
 
-})
+    const updatedChat = await Chat.findByIdAndUpdate(
+        chatId,
+        { $pull: { users: userId } },
+        { new: true }
+    ).populate("users", "-password").populate("groupAdmin", "-password");
 
-export const removeFromGroup = asyncHandler(async(req,res) => {
-    const {chatId, userId} = req.body;
-
-    const remove  = await Chat.findByIdAndUpdate(chatId, {
-        $pull: {users:userId},
-
-    }, {new:true})
-    .populate("users", "-password")
-    .populate("groupAdmin", "-password");
-
-    if(!remove){
+    if (!updatedChat) {
         res.status(404);
-        throw new Error("Chat not Found");
-    }else{
-        res.json(remove);
+        throw new Error("Chat not found or user not removed");
     }
 
-})
+    res.status(200).json({
+        message: "User Removed From Group Successfully",
+        chat: updatedChat,
+    });
+});
