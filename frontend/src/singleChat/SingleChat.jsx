@@ -147,18 +147,17 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         SenderName = selectedChat.chatName;
         chatId = selectedChat._id;
     }
-    else if (selectedChat?.users[1]._id == user._id) {
+    else if (selectedChat?.users[1]?._id == user?._id) {
         SenderName = selectedChat?.users[0].name;
         chatId = selectedChat._id;
     }
-    else if (selectedChat?.users[0]._id == user._id) {
-        SenderName = selectedChat?.users[1].name;
-        chatId = selectedChat._id;
+    else if (selectedChat?.users[0]?._id == user?._id) {
+        SenderName = selectedChat?.users[1]?.name;
+        chatId = selectedChat?._id;
     }
     else {
         SenderName = "Reload page to Load Name"
     }
-
 
     const handleFileChange = (e) => {
         setSelectedFile(e.target.files[0]);
