@@ -184,7 +184,9 @@ export const sendMessage = asyncHandler(async (req, res) => {
 export const reactToMessage = async (req, res) => {
   const { messageId } = req.params;
   const { emoji } = req.body;
-  const userId = req.user._id;
+  console.log("User-->",req);
+
+  const userId = req.user?._id;
 
   console.log("MID-->", messageId);
   console.log("EMJ-->", emoji);
@@ -305,8 +307,8 @@ export const forwardMessage = asyncHandler(async (req, res) => {
 
 // Fetch all messages
 export const allMessages = asyncHandler(async (req, res) => {
-  const chatId = req.params.chatId;
-  const userId = req.user._id;
+  const chatId = req.params?.chatId;
+  const userId = req.user?._id;
 
   try {
     let messages = await Message.find({ chat: chatId })
