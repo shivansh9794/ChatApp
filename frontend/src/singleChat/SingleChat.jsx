@@ -64,7 +64,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
 
 
 
-    
+
     // receive message from socket
     useEffect(() => {
         socket.on("message received", (newMessageReceived) => {
@@ -191,15 +191,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             <div className="w-full max-w-full flex-col items-end mt-4">
                 {/* File input (conditionally rendered) */}
                 {showFileInput && (
-                    // <div className="mt-2 h-20 rounded-t-2xl w-full flex flex-col gap-2">
-                    //     <input
-                    //         type="file"
-                    //         onChange={(e) => setFile(e.target.files[0])}
-                    //         className="block w-full h-5 text-sm text-gray-900 bg-gray-200 rounded border border-gray-300 cursor-pointer"
-                    //     />
-                    //     {/* {file && (<p className="text-xs h-10 text-gray-700">Selected: {file.name}</p>)} */}
-                    //     {file && (<img src={file}/>)}
-                    // </div>
+                    
                     <div className="mt-2 h-auto rounded-t-2xl w-full flex flex-col gap-2">
                         <input
                             type="file"
