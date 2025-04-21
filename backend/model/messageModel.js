@@ -1,5 +1,22 @@
 import mongoose from "mongoose";
 
+// Crating reaction schema
+const reactionSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+  emoji: {
+    type: String,
+    required: true
+  },
+  reactedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, { _id: false })
+
 const messageModel = mongoose.Schema({
   sender: {
     type: mongoose.Schema.Types.ObjectId,
@@ -32,22 +49,9 @@ const messageModel = mongoose.Schema({
     uploaded_at: Date
   },
 
-  reactions: [
-    {
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-      },
-      emoji: {
-        type: String,
-        required: true
-      },
-      reactedAt: {
-        type: Date,
-        default: Date.now
-      }
-    }
-  ],
+  senderReactions: [reactionSchema],
+  
+  receiverReactions: [reactionSchema],
 
   seenBy: [
     {

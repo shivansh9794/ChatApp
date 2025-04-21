@@ -6,6 +6,7 @@ import userRoutes from './routes/userRoutes.js'
 import chatRoutes from './routes/chatRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
 import Message from './model/messageModel.js';
+import Chat from "./model/chatModel.js";
 
 
 connectDB();
@@ -76,18 +77,31 @@ io.on("connection", (socket) => {
     });
 
     // New Reaction
-    socket.on('react', (newReactionReceived) => {
-        const chat = newReactionReceived.chat;
-        if (!chat.users) return console.log("Chat.Users Not Defined");
+    socket.on("react", async (newReactionReceived) => {
+        try {
+            const chatId = newReactionReceived.chat;
+            const senderId = newReactionReceived.sender;
 
-        chat.users.forEach(user => {
-            if (user._id == newReactionReceived.sender._id) return;
+            // Fetch chat with users from DB
+            const chat = await Chat.findById(chatId).populate("users", "_id");
 
-            // Sending new reaction
-            socket.in(user._id).emit("reaction received", newReactionReceived);
+            if (!chat || !chat.users) {
+                return console.log("Chat or chat.users not found");
+            }
 
-        });
+            // Send the reaction to all users in the chat except the sender
+            chat.users.forEach((user) => {
+                // if (user._id.toString() === senderId.toString()) return;
+                console.log("hahaha____");
+                
+                socket.to(user._id.toString()).emit("reaction received", newReactionReceived);
+            });
+
+        } catch (error) {
+            console.error("Error handling react socket event:", error.message);
+        }
     });
+
 
     // Socket to Mark as Seen
     socket.on("mark seen", async ({ chatId, userId }) => {

@@ -29,7 +29,8 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         socket.on("stop typing", () => setIsTyping(false));
     }, []);
 
-
+    
+    
     // Fetch messages when selectedChat changes
     const fetchMessages = async () => {
 
@@ -182,7 +183,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             </div>
 
             {/* Message Container */}
-            <ChatComponent messages={messages} user={user}></ChatComponent>
+            <ChatComponent messages={messages} user={user} setMessages={setMessages} ></ChatComponent>
 
             {/* Typing Indicator */}
             {istyping ? (<div className='font-bold text-black font-mono bg-transparent w-auto '>Typing...</div>) : (<></>)}

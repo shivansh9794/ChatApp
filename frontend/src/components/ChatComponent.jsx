@@ -2,15 +2,25 @@ import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios'
 import { chatState } from '../context/chatProvider';
 import { baseUrl } from '../config/KeyConfig';
+import { io } from 'socket.io-client';
+const ENDPOINT = baseUrl;
+var socket;
 
-
-function ChatComponent({ messages }) {
+function ChatComponent({ messages, setMessages }) {
   const { user, setUser, selectedChat } = chatState();
   const messagesContainerRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [msgId, setMsgId] = useState();
-  let LoggedUser = '';
+  let Userdata;
 
+
+
+
+  useEffect(() => {
+    Userdata = JSON.parse(localStorage.getItem("userInfo"));
+    socket = io(ENDPOINT);
+    socket.emit("setup", Userdata);
+  }, []);
 
   const modalRef = useRef(null);
 
@@ -44,6 +54,23 @@ function ChatComponent({ messages }) {
     return isoDatetime.split("T")[0];
   }
 
+
+  useEffect(() => {
+    socket.on("reaction received", (updatedMessage) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg._id === updatedMessage._id ? updatedMessage : msg
+        )
+      );
+    });
+
+    // Cleanup on unmount
+    return () => socket.off("reaction received");
+  }, []);
+
+
+
+
   const addReaction = async (msgId) => {
 
     const config = {
@@ -55,7 +82,8 @@ function ChatComponent({ messages }) {
     await axios.post(`${baseUrl}/api/message/react/${msgId}`, { emoji: "👍" }, config)
       .then((result) => {
         setOpen(() => false);
-        console.log(result);
+        console.log(result.data);
+        socket.emit("react", result.data); // socket to send reaction
       }).catch((err) => {
         console.log(err);
       });
@@ -114,6 +142,16 @@ function ChatComponent({ messages }) {
 
             <h1>{message?.createdTime || (message.createdAt).split("T")[1].slice(0, 5)}</h1>
 
+            {
+              message.reactions != null ?
+                <button className='hover:animate-ping cursor-pointer rounded-full bg-transparent font-bold text-xl text-center'>{message?.reactions[0]?.emoji}</button>
+                : ""
+            }
+            {
+              message.reactions != null ?
+                <button className='hover:animate-ping cursor-pointer rounded-full bg-transparent font-bold text-xl text-center'>{message?.reactions[0]?.emoji}</button>
+                : ""
+            }
             {
               message.reactions != null ?
                 <button className='hover:animate-ping cursor-pointer rounded-full bg-transparent font-bold text-xl text-center'>{message?.reactions[0]?.emoji}</button>
