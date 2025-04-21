@@ -7,14 +7,11 @@ const ENDPOINT = baseUrl;
 var socket;
 
 function ChatComponent({ messages, setMessages }) {
-  const { user, setUser, selectedChat } = chatState();
+  const { user } = chatState();
   const messagesContainerRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [msgId, setMsgId] = useState();
   let Userdata;
-
-
-
 
   useEffect(() => {
     Userdata = JSON.parse(localStorage.getItem("userInfo"));
