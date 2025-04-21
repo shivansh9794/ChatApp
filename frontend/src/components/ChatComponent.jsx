@@ -63,11 +63,9 @@ function ChatComponent({ messages, setMessages }) {
         )
       );
     });
-
     // Cleanup on unmount
     return () => socket.off("reaction received");
   }, []);
-
 
 
 
@@ -82,8 +80,12 @@ function ChatComponent({ messages, setMessages }) {
     await axios.post(`${baseUrl}/api/message/react/${msgId}`, { emoji: "👍" }, config)
       .then((result) => {
         setOpen(() => false);
-        console.log(result.data);
-        socket.emit("react", result.data); // socket to send reaction
+        socket.emit("reaction", result.data); // socket to send reaction
+        setMessages((prevMessages) =>         // setting the updated message on sender side
+          prevMessages.map((msg) =>
+            msg._id === result?.data?._id ? result?.data : msg
+          )
+        );
       }).catch((err) => {
         console.log(err);
       });
@@ -148,13 +150,14 @@ function ChatComponent({ messages, setMessages }) {
                 : ""
             }
             {
-              message.reactions != null ?
-                <button className='hover:animate-ping cursor-pointer rounded-full bg-transparent font-bold text-xl text-center'>{message?.reactions[0]?.emoji}</button>
+              message.senderReactions != null ?
+                <button className='hover:animate-ping cursor-pointer rounded-full bg-transparent font-bold text-xl text-center'>{message?.
+                  receiverReactions[0]?.emoji}</button>
                 : ""
             }
             {
-              message.reactions != null ?
-                <button className='hover:animate-ping cursor-pointer rounded-full bg-transparent font-bold text-xl text-center'>{message?.reactions[0]?.emoji}</button>
+              message.receiverReactions != null ?
+                <button className='hover:animate-ping cursor-pointer rounded-full bg-transparent font-bold text-xl text-center'>{message?.senderReactions[0]?.emoji}</button>
                 : ""
             }
 

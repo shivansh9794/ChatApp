@@ -77,23 +77,20 @@ io.on("connection", (socket) => {
     });
 
     // New Reaction
-    socket.on("react", async (newReactionReceived) => {
+    socket.on("reaction", async (newReactionReceived) => {
         try {
             const chatId = newReactionReceived.chat;
-            const senderId = newReactionReceived.sender;
+            const senderId = newReactionReceived.sender; // This is just userId (string)
 
-            // Fetch chat with users from DB
+            // Get users from DB based on chatId
             const chat = await Chat.findById(chatId).populate("users", "_id");
 
             if (!chat || !chat.users) {
                 return console.log("Chat or chat.users not found");
             }
 
-            // Send the reaction to all users in the chat except the sender
             chat.users.forEach((user) => {
-                // if (user._id.toString() === senderId.toString()) return;
-                console.log("hahaha____");
-                
+                // Don't return early; emit to everyone including sender                
                 socket.to(user._id.toString()).emit("reaction received", newReactionReceived);
             });
 
@@ -101,7 +98,6 @@ io.on("connection", (socket) => {
             console.error("Error handling react socket event:", error.message);
         }
     });
-
 
     // Socket to Mark as Seen
     socket.on("mark seen", async ({ chatId, userId }) => {

@@ -182,62 +182,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
 });
 
 // React to mesaage
-// export const reactToMessage = async (req, res) => {
-
-//   console.log("____WORKING_____");
-//   const { messageId } = req.params;
-//   const { emoji } = req.body;
-//   const userId = req.user._id;
-//   console.log("MID-->",messageId);
-//   console.log("EMJ-->",emoji);
-//   console.log("UID-->",userId);
-
-//   try {
-//     const message = await Message.findById(messageId);
-
-//     if (!message) {
-//       return res.status(404).json({ message: "Message not found" });
-//     }
-
-//     // Check if user already reacted
-//     const existingReactionIndex = message.reactions.findIndex(
-//       (r) => r.user.toString() === userId.toString()
-//     );
-
-//     if (existingReactionIndex > -1) {
-//       const existingEmoji = message.reactions[existingReactionIndex].emoji;
-
-//       if (existingEmoji === emoji) {
-//         // Toggle off the same reaction
-//         message.reactions.splice(existingReactionIndex, 1);
-//       } else {
-//         // Update with new emoji
-//         message.reactions[existingReactionIndex].emoji = emoji;
-//         message.reactions[existingReactionIndex].reactedAt = new Date();
-//       }
-//     } else {
-//       // Add new reaction
-//       message.reactions.push({
-//         user: userId,
-//         emoji: emoji,
-//         reactedAt: new Date()
-//       });
-//     }
-
-//     await message.save();
-
-//     const updatedMessage = await Message.findById(messageId)
-//       .populate('reactions.user', 'username avatar') // adjust fields as needed
-//       .exec();
-
-//     res.status(200).json(updatedMessage);
-//   } catch (error) {
-//     console.error("Reaction error:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
 export const reactToMessage = async (req, res) => {
-
   const { messageId } = req.params;
   const { emoji } = req.body;
   const userId = req.user._id;
@@ -255,7 +200,7 @@ export const reactToMessage = async (req, res) => {
 
     const isSender = message.sender.toString() === userId.toString();
 
-    // Choose which reactions array to use
+    // Choose appropriate reaction array
     const reactionsArray = isSender ? message.senderReactions : message.receiverReactions;
 
     // Check if user already reacted
@@ -267,10 +212,10 @@ export const reactToMessage = async (req, res) => {
       const existingEmoji = reactionsArray[existingReactionIndex].emoji;
 
       if (existingEmoji === emoji) {
-        // Toggle off the same reaction
+        // Toggle off
         reactionsArray.splice(existingReactionIndex, 1);
       } else {
-        // Update with new emoji
+        // Update emoji
         reactionsArray[existingReactionIndex].emoji = emoji;
         reactionsArray[existingReactionIndex].reactedAt = new Date();
       }
@@ -285,11 +230,20 @@ export const reactToMessage = async (req, res) => {
 
     await message.save();
 
+    // Repopulate like allMessages
     const updatedMessage = await Message.findById(messageId)
-      .populate('sender', 'username')
-      .populate('senderReactions.user', 'username')
-      .populate('receiverReactions.user', 'username')
-      .exec();
+      .populate("sender", "name username avatar")
+      .populate("chat")
+      .populate("senderReactions.user", "username avatar")
+      .populate("receiverReactions.user", "username avatar")
+      .populate({
+        path: "replyOf",
+        select: "-senderReactions -receiverReactions",
+        populate: {
+          path: "sender",
+          select: "name username"
+        }
+      });
 
     res.status(200).json(updatedMessage);
   } catch (error) {
@@ -297,7 +251,6 @@ export const reactToMessage = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 
 export const forwardMessage = asyncHandler(async (req, res) => {
@@ -352,7 +305,6 @@ export const forwardMessage = asyncHandler(async (req, res) => {
 
 
 // Fetch all messages
-
 export const allMessages = asyncHandler(async (req, res) => {
   const chatId = req.params.chatId;
   const userId = req.user._id;

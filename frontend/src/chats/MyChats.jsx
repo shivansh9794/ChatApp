@@ -13,10 +13,7 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
   const [loggedUser, setLoggedUser] = useState();
   const [openAddGroup, setOpenAddGroup] = useState(false);
   const [groupUserList, setGroupUserList] = useState([]);
-  const [groupName,setGropuName]=useState('');
-
-  console.log(groupUserList);
-  
+  const [groupName,setGropuName]=useState('');  
 
   useEffect(()=>{
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
