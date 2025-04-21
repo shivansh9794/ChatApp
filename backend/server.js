@@ -75,6 +75,20 @@ io.on("connection", (socket) => {
         });
     });
 
+    // New Reaction
+    socket.on('react', (newReactionReceived) => {
+        const chat = newReactionReceived.chat;
+        if (!chat.users) return console.log("Chat.Users Not Defined");
+
+        chat.users.forEach(user => {
+            if (user._id == newReactionReceived.sender._id) return;
+
+            // Sending new reaction
+            socket.in(user._id).emit("reaction received", newReactionReceived);
+
+        });
+    });
+
     // Socket to Mark as Seen
     socket.on("mark seen", async ({ chatId, userId }) => {
 
