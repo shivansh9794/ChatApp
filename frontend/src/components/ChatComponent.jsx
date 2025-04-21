@@ -13,8 +13,25 @@ function ChatComponent({ messages, setMessages }) {
   const [open, setOpen] = useState(false);
   const [msgId, setMsgId] = useState();
   let Userdata;
+  useEffect(() => {
+    Userdata = JSON.parse(localStorage.getItem("userInfo"));
+    socket = io(ENDPOINT);
+    socket.emit("setup", Userdata);
+  }, []);
 
   // scroll to Last message
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // Close The reaction popup on outside click handler
+  const handleClickOutside = (event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      setOpen(false);
+    }
+  };
   useEffect(() => {
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -27,24 +44,6 @@ function ChatComponent({ messages, setMessages }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [open]);
-
-
-  useEffect(() => {
-    Userdata = JSON.parse(localStorage.getItem("userInfo"));
-    socket = io(ENDPOINT);
-    socket.emit("setup", Userdata);
-  }, []);
-
-
-  useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  function trimTime(isoDatetime) {
-    return isoDatetime.split("T")[0];
-  }
 
   // show the reaction in receiver side
   useEffect(() => {
@@ -59,8 +58,7 @@ function ChatComponent({ messages, setMessages }) {
     return () => socket.off("reaction received");
   }, []);
 
-
-
+  // Add reaction API
   const addReaction = async (msgId, emoji) => {
 
     const config = {
@@ -85,7 +83,7 @@ function ChatComponent({ messages, setMessages }) {
       });
   }
 
-
+  // Double click open module
   const openDoubleClick = () => {
     const emojis = ['😄', '❤️', '👍', '😢', '😂']; // 5 emojis
 
@@ -111,7 +109,6 @@ function ChatComponent({ messages, setMessages }) {
       </div>
     );
   }
-
 
 
   return (
