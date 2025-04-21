@@ -9,24 +9,12 @@ var socket;
 function ChatComponent({ messages, setMessages }) {
   const { user } = chatState();
   const messagesContainerRef = useRef(null);
+  const modalRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [msgId, setMsgId] = useState();
   let Userdata;
 
-  useEffect(() => {
-    Userdata = JSON.parse(localStorage.getItem("userInfo"));
-    socket = io(ENDPOINT);
-    socket.emit("setup", Userdata);
-  }, []);
-
-  const modalRef = useRef(null);
-
-  const handleClickOutside = (event) => {
-    if (modalRef.current && !modalRef.current.contains(event.target)) {
-      setOpen(false);
-    }
-  };
-
+  // scroll to Last message
   useEffect(() => {
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -39,6 +27,13 @@ function ChatComponent({ messages, setMessages }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [open]);
+
+
+  useEffect(() => {
+    Userdata = JSON.parse(localStorage.getItem("userInfo"));
+    socket = io(ENDPOINT);
+    socket.emit("setup", Userdata);
+  }, []);
 
 
   useEffect(() => {
