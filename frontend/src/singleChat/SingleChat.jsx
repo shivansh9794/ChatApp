@@ -62,6 +62,9 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         selectedChatCompare = selectedChat;
     }, [selectedChat]); // Re-fetch messages when selectedChat changes
 
+
+
+    
     // receive message from socket
     useEffect(() => {
         socket.on("message received", (newMessageReceived) => {
@@ -72,7 +75,10 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 setMessages([...messages, newMessageReceived]);
             }
         })
-    })
+    });
+
+
+
 
     let [previewUrl, setPreview] = useState(null);
     useEffect(() => {
@@ -111,7 +117,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 setNewMessage("");
                 setFile('');
                 setShowFileInput(false);
-                socket.emit("new message", data); // socket send data
+                socket.emit("new message", data); // socket to send data
                 setFetchAgain();
             } catch (error) {
                 console.log("Error sending message:", error);
