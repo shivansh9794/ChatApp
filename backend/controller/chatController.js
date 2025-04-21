@@ -75,7 +75,10 @@ export const fetchChats = asyncHandler(async (req, res) => {
     try {
         const userId = req.user._id;
 
-        let chats = await Chat.find({ users: { $elemMatch: { $eq: userId } } })
+        let chats = await Chat.find({
+            users: { $elemMatch: { $eq: userId } },
+            deletedBy: { $ne: userId }
+        })
             .populate("users", "-password")
             .populate("groupAdmin", "-password")
             .populate("latestMessage")
@@ -223,39 +226,55 @@ export const removeFromGroup = asyncHandler(async (req, res) => {
     });
 });
 
-export const deleteChat = asyncHandler(async (req, res) => {
+export const deleteGroup = asyncHandler(async (req, res) => {
+
     const chatId = req.params.chatId;
-    const userId = req.user._id;
-
-    console.log("chatId-->",chatId);
-
     const chat = await Chat.findById(chatId);
 
     if (!chat) {
-        return res.status(404).json({ message: "Chat not found" });
-    }
-    console.log("user->",userId);
-    console.log("Users->",chat.users);
-
-    // Check if user is part of the chat
-    if (!chat.users.includes(userId)) {
-        return res.status(403).json({ message: "You are not part of this chat" });
+        return res.status(404).json({ message: "Group Chat not found" });
     }
 
-    // Remove user from the chat
-    chat.users = chat.users.filter(id => id.toString() !== userId.toString());
-
-    // Optional: If groupAdmin left, you could assign a new admin
-    if (chat.isGroupChat && chat.groupAdmin.toString() === userId.toString()) {
-        if (chat.users.length > 0) {
-            chat.groupAdmin = chat.users[0]; // assign new admin
-        } else {
-            chat.groupAdmin = null;
-        }
+    if (!chat.isGroupChat) {
+        return res.status(400).json({ message: "Only group chats can be deleted." });
     }
 
-    await chat.save();
+    if (chat.groupAdmin.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: "Only group admin can delete the group." });
+    }
 
-    const message = chat.isGroupChat ? "Group chat left successfully" : "Chat deleted for you";
-    res.status(200).json({ message });
+    try {
+        await Message.deleteMany({ chat: chatId });
+        await Chat.findByIdAndDelete(chatId);
+        return res.status(200).json({ message: "Group Deleted Successfully" });
+    }
+    catch (error) {
+        console.error("Delete Group error:", error);
+        return res.status(500).json({ message: "error" });
+    }
 });
+
+export const deleteChatForMe = async (req, res) => {
+    const { chatId } = req.params;
+    const userId = req.user._id;
+
+    try {
+        const chat = await Chat.findById(chatId);
+
+        if (!chat) {
+            return res.status(404).json({ message: "Chat not found" });
+        }
+
+        // If already deleted by this user, no need to update
+        if (chat.deletedBy.includes(userId)) {
+            return res.status(200).json({ message: "Chat already deleted for this user" });
+        }
+
+        chat.deletedBy.push(userId);
+        await chat.save();
+        return res.status(200).json({ message: "Chat deleted for current user" });
+    } catch (err) {
+        console.error("Delete chat for me error:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};

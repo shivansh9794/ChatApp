@@ -67,12 +67,6 @@ export const sendMessage = asyncHandler(async (req, res) => {
 
   const { chatId, content ,replyOf} = req.body;
 
-  console.log("ID->", chatId);
-  console.log("Content->", content);
-  console.log("Reply of data->", replyOf);
-  console.log("File->", req.file);
-
-
   if (!chatId) {
     console.log("No Id passed into request");
     return res.sendStatus(400);
@@ -173,6 +167,11 @@ export const sendMessage = asyncHandler(async (req, res) => {
     });
 
     await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+
+    //  remove the user from deleted list
+    await Chat.findByIdAndUpdate(chatId, {
+      $pull: { deletedBy: { $in: message.chat.users.map(user => user._id) } }
+    });
 
     res.json(message);
   } catch (error) {
