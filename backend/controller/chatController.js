@@ -201,7 +201,7 @@ export const addToGroup = asyncHandler(async (req, res) => {
     });
 });
 
-export const removeFromGroup = asyncHandler(async (req, res) => {
+export const removeUserFromGroupOrLeave = asyncHandler(async (req, res) => {
     const { chatId, userId } = req.body;
 
     if (!chatId || !userId) {
@@ -221,7 +221,7 @@ export const removeFromGroup = asyncHandler(async (req, res) => {
     }
 
     res.status(200).json({
-        message: "User Removed From Group Successfully",
+        message: "User Exited From Group Successfully",
         chat: updatedChat,
     });
 });

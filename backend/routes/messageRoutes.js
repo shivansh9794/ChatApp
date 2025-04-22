@@ -10,7 +10,7 @@ router.post('/', upload.single('file'), protect, sendMessage);
 
 router.post('/upload', upload.single('file'), protect, uploadFile);
 
-router.post('/react/:messageId', upload.single('file'), protect, reactToMessage);
+router.post('/react/:messageId', protect, reactToMessage);
 
 router.post('/forward', protect, forwardMessage);
 

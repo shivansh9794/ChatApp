@@ -184,7 +184,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
 export const reactToMessage = async (req, res) => {
   const { messageId } = req.params;
   const { emoji } = req.body;
-  console.log("User-->",req);
+  console.log("User-->",req.user);
 
   const userId = req.user?._id;
 
