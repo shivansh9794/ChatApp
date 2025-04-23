@@ -21,6 +21,10 @@ const chatModel = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref:"User"
     },
+    groupProfilePic: {
+        url: { type: String },
+        public_id: { type: String },
+    },
     deletedBy: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"

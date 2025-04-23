@@ -2,6 +2,20 @@ import asyncHandler from 'express-async-handler';
 import Chat from '../model/chatModel.js'
 import User from '../model/userModel.js';
 import Message from "../model/messageModel.js";
+import fs from "fs";
+import crypto from "crypto";
+import cloudinary from "cloudinary";
+import mime from 'mime-types';
+
+
+cloudinary.v2.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_SECRET_KEY
+});
+
+// In-memory cache for file hashes
+const uploadedFileMap = {};
 
 
 export const accessChat = asyncHandler(async (req, res) => {
@@ -48,29 +62,6 @@ export const accessChat = asyncHandler(async (req, res) => {
     }
 })
 
-// export const fetchChats = asyncHandler(async(req, res) => {
-//     try {
-//         Chat.find({users: { $elemMatch: { $eq: req.user._id}}})
-//         .populate("users", "-password")
-//         .populate("groupAdmin", "-password")
-//         .populate("latestMessage")
-//         .sort({updatedAt: -1})
-//         .then(async(results) => {
-//             results = await User.populate(results, {
-//                 path: "latestMessage.sender",
-//                 select:"name pic email",
-//             });
-//             res.status(200).send(results);
-//         })
-//     } catch (error) {
-//         res.status(400);
-//         throw new Error(error.message);
-//     }
-// })
-
-// Group routes
-
-
 export const fetchChats = asyncHandler(async (req, res) => {
     try {
         const userId = req.user._id;
@@ -79,15 +70,17 @@ export const fetchChats = asyncHandler(async (req, res) => {
             users: { $elemMatch: { $eq: userId } },
             deletedBy: { $ne: userId }
         })
-            .populate("users", "-password")
-            .populate("groupAdmin", "-password")
-            .populate("latestMessage")
+            .populate("users", "name")
+            .populate("groupAdmin", "name")
+            .populate("latestMessage", "content sender")
             .sort({ updatedAt: -1 });
 
         chats = await User.populate(chats, {
             path: "latestMessage.sender",
             select: "name",
         });
+
+
 
         // Add unread message count for each chat
         const chatsWithUnreadCount = await Promise.all(
@@ -112,31 +105,87 @@ export const fetchChats = asyncHandler(async (req, res) => {
     }
 });
 
-export const createGroupChat = asyncHandler(async (req, res) => {
-    if (!req.body.users || !req.body.name) {
+export const createGroupChat = asyncHandler(async (req, res,next) => {
+
+    const { userList, groupName } = req.body;
+
+    if (!userList || !groupName) {
         return res.status(400).send({ message: "Please fill all the fields" })
     }
 
-    var users = JSON.parse(req.body.users);
+    console.log("UsersList ==>", userList);
+    console.log("GrpName-->", groupName);
+    console.log("User->", req.user._id);
+    console.log("file-->", req.file);
+
+
+    let cloudinaryData;
+    if (req.file) {
+        try {
+            const filePath = req.file.path;
+
+            const mimeType = mime.lookup(filePath);
+            let resourceType = 'auto';
+
+            // Generate hash
+            const fileBuffer = fs.readFileSync(filePath);
+            const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
+            // Check for duplicates
+            let cloudinaryResult = uploadedFileMap[fileHash];
+
+            if (!cloudinaryResult) {
+                // Upload to Cloudinary
+                cloudinaryResult = await cloudinary.v2.uploader.upload(filePath, {
+                    resource_type: resourceType,
+                    folder: 'Chat/GroupProfilePics',
+                    use_filename: true,
+                    unique_filename: false
+                });
+                uploadedFileMap[fileHash] = cloudinaryResult;
+            }
+
+            // Delete local file
+            fs.unlink(filePath, () => { });
+
+            cloudinaryData = {
+                url: cloudinaryResult?.secure_url,
+                public_id: cloudinaryResult?.public_id,
+            };
+        } catch (err) {
+            console.error("File upload error:", err);
+            return res.status(500).json({ success: false, message: "File upload failed" });
+        }
+    }
+
+    let users;
+
+    try {
+        users = JSON.parse(req.body.userList);
+    } catch (err) {
+        return res.status(400).send({ message: "Invalid userList format" });
+    }
+
     if (users.length < 2) {
         return res.status(400).send("More than 2 users are required to form a group chat")
     }
-
-    users.push(req.user); // adding currently Logged in user to a Group
-
-    console.log("++", users);
+    console.log("Check type->", typeof (users));
+    users?.push(req.user._id); // adding currently Logged in user to a Group 
 
     try {
         const groupChat = await Chat.create({
-            chatName: req.body.name,
+            chatName: groupName,
             users: users,
             isGroupChat: true,
-            groupAdmin: req.user
+            groupAdmin: req.user._id,
+            groupProfilePic: cloudinaryData
         })
         const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
-            .populate("users", "-password")
-            .populate("groupAdmin", "-password");
-        res.status(200).json(fullGroupChat);
+            .populate("users", "name profilePicture")
+            .populate("groupAdmin", "name profilePicture");
+
+        res.status(200).json({ message: "Group created Successfully", fullGroupChat });
+
     } catch (error) {
         throw new Error(error.message);
     }
@@ -278,3 +327,89 @@ export const deleteChatForMe = async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 };
+
+
+
+
+
+
+// export const GroupChat = asyncHandler(async (req, res, next) => {
+
+//     const { userList, groupName } = req.body;
+
+//     // if (!req.body.users || !req.body.name) {
+//     //     return res.status(400).send({ message: "Please fill all the fields" })
+//     // }
+
+//     console.log("UserList ==>", userList);
+//     console.log("GrpName-->", groupName);
+//     console.log("User->", req.user._id);
+//     console.log("Pro..file-->", req.file);
+
+
+//     if (req.file) {
+//         try {
+//             const filePath = req.file.path;
+
+//             const mimeType = mime.lookup(filePath);
+//             let resourceType = 'auto';
+
+//             // Generate hash
+//             const fileBuffer = fs.readFileSync(filePath);
+//             const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
+//             // Check for duplicates
+//             let cloudinaryResult = uploadedFileMap[fileHash];
+
+//             if (!cloudinaryResult) {
+//                 // Upload to Cloudinary
+//                 cloudinaryResult = await cloudinary.v2.uploader.upload(filePath, {
+//                     resource_type: resourceType,
+//                     folder: 'Chat',
+//                     use_filename: true,
+//                     unique_filename: false
+//                 });
+//                 uploadedFileMap[fileHash] = cloudinaryResult;
+//             }
+
+//             // Delete local file
+//             fs.unlink(filePath, () => { });
+
+//             // Set message type based on resource_type
+
+//             console.log("Result --->", cloudinaryResult);
+
+//         } catch (err) {
+//             console.error("File upload error:", err);
+//             return res.status(500).json({ success: false, message: "File upload failed" });
+//         }
+//     }
+
+
+//     res.status(200).send({ message: "Group With Profile Photo Created" });
+
+
+
+
+//     // var users = JSON.parse(userList);
+
+
+//     // if (users.length < 2) {
+//     //     return res.status(400).send("More than 2 users are required to form a group chat")
+//     // }
+//     // users.push(req.userId); // adding currently Logged in user to a Group
+//     // try {
+//     //     const groupChat = await Chat.create({
+//     //         chatName: req.body.name,
+//     //         users: users,
+//     //         isGroupChat: true,
+//     //         groupAdmin: req.userId
+//     //     })
+//     //     const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
+//     //         .populate("users", "-password")
+//     //         .populate("groupAdmin", "-password");
+//     //     res.status(200).json(fullGroupChat);
+//     // } catch (error) {
+//     //     throw new Error(error.message);
+//     // }
+// })

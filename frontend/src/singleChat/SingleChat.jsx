@@ -29,12 +29,12 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         socket.on("stop typing", () => setIsTyping(false));
     }, []);
 
-    
-    
+
+
     // Fetch messages when selectedChat changes
     const fetchMessages = async () => {
 
-        if (!selectedChat) return;         
+        if (!selectedChat) return;
         try {
             const config = {
                 headers: {
@@ -52,11 +52,11 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
     };
 
     // Set mark as seen when we refetch the message 
-    useEffect(()=>{
+    useEffect(() => {
         Userdata = JSON.parse(localStorage.getItem("userInfo"));
-        socket.emit("mark seen",{"chatId":selectedChat._id,"userId":Userdata?._id})
+        socket.emit("mark seen", { "chatId": selectedChat._id, "userId": Userdata?._id })
         // console.log("Hiii")
-    },[messages]);
+    }, [messages]);
 
     useEffect(() => {
         fetchMessages();
@@ -176,9 +176,10 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
 
     return (
         <div className="bg-gray-300 border-l-2 border-r-2 border-b-2 h-[91vh] w-full flex flex-col justify-end">
-            
+
             {/* Message Page Header */}
-            <div className='w-full p-2 bg-gray-300 shadow-lg '>
+            <div className='w-full p-2 bg-gray-300 shadow-lg flex'>
+                <img className='w-[15%] h-full' src={selectedChat?.groupProfilePic?.url} alt="N/A" />
                 <h1 className='font-bold text-2xl'>{SenderName}</h1>
             </div>
 
@@ -192,7 +193,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             <div className="w-full max-w-full flex-col items-end mt-4">
                 {/* File input (conditionally rendered) */}
                 {showFileInput && (
-                    
+
                     <div className="mt-2 h-auto rounded-t-2xl w-full flex flex-col gap-2">
                         <input
                             type="file"
@@ -240,7 +241,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             {/* <div className='absolute w-[60%] h-[50%] border-2 border-amber-300 m-3'>
                 {VideoCall(SenderName,chatId)}
             </div> */}
-            
+
         </div>
     );
 };
