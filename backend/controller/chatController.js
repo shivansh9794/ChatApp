@@ -17,7 +17,6 @@ cloudinary.v2.config({
 // In-memory cache for file hashes
 const uploadedFileMap = {};
 
-
 export const accessChat = asyncHandler(async (req, res) => {
     const { userId } = req.body;
 
@@ -105,7 +104,21 @@ export const fetchChats = asyncHandler(async (req, res) => {
     }
 });
 
-export const createGroupChat = asyncHandler(async (req, res,next) => {
+export const fetchChatInfo = asyncHandler(async (req, res) => {
+    try {
+        const chatId = req.params.chatId;
+
+        let chatInfo = await Chat.findById(chatId)
+            .populate("users", "name")
+            .populate("groupAdmin", "name")
+        res.status(200).send(chatInfo);
+    } catch (error) {
+        res.status(400);
+        throw new Error(error.message);
+    }
+});
+
+export const createGroupChat = asyncHandler(async (req, res, next) => {
 
     const { userList, groupName } = req.body;
 
@@ -213,12 +226,53 @@ export const renameGroup = asyncHandler(async (req, res) => {
     }
 })
 
-export const addToGroup = asyncHandler(async (req, res) => {
-    const { chatId, userId } = req.body;
+// export const addToGroup = asyncHandler(async (req, res) => {
+//     const { chatId, userId } = req.body;
 
-    if (!chatId || !userId) {
+//     if (!chatId || !userId) {
+//         res.status(400);
+//         throw new Error("chatId and userId are required");
+//     }
+
+//     const chat = await Chat.findById(chatId);
+//     if (!chat) {
+//         res.status(404);
+//         throw new Error("Chat not found");
+//     }
+
+//     // Checking if the user is already in the group or not
+//     if (chat.users.includes(userId)) {
+//         res.status(400).json({
+//             message: "User Is Already Added to group",
+//         })
+//         throw new Error("User already in the group");
+//     }
+
+//     // Adding user to group
+//     const updatedChat = await Chat.findByIdAndUpdate(
+//         chatId,
+//         { $push: { users: userId } },
+//         { new: true }
+//     )
+//         .populate("users", "-password")
+//         .populate("groupAdmin", "-password");
+
+//     res.status(200).json({
+//         message: "User added to group successfully",
+//         chat: updatedChat,
+//     });
+// });
+
+export const addToGroup = asyncHandler(async (req, res) => {
+    const { chatId, userIds } = req.body; // Now expecting an array of user IDs
+
+    console.log("CID->", chatId);
+    console.log("UL->", userIds);
+
+
+    if (!chatId || !Array.isArray(userIds) || userIds.length === 0) {
         res.status(400);
-        throw new Error("chatId and userId are required");
+        throw new Error("chatId and at least one userId are required");
     }
 
     const chat = await Chat.findById(chatId);
@@ -227,25 +281,30 @@ export const addToGroup = asyncHandler(async (req, res) => {
         throw new Error("Chat not found");
     }
 
-    // Checking if the user is already in the group or not
-    if (chat.users.includes(userId)) {
-        res.status(400).json({
-            message: "User Is Already Added to group",
-        })
-        throw new Error("User already in the group");
+    // Filter out users that are already in the chat
+    const newUsersToAdd = userIds.filter(
+        (id) => !chat.users.includes(id)
+    );
+
+    if (newUsersToAdd.length === 0) {
+        res.status(400);
+        throw new Error("All users are already in the group");
     }
 
-    // Adding user to group
     const updatedChat = await Chat.findByIdAndUpdate(
         chatId,
-        { $push: { users: userId } },
+        {
+            $addToSet: {
+                users: { $each: newUsersToAdd }
+            }
+        },
         { new: true }
     )
         .populate("users", "-password")
-        .populate("groupAdmin", "-password");
+
 
     res.status(200).json({
-        message: "User added to group successfully",
+        message: "Users added to group successfully",
         chat: updatedChat,
     });
 });

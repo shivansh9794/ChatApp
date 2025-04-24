@@ -1,5 +1,5 @@
 import express from 'express';
-import { accessChat, fetchChats, createGroupChat, renameGroup,removeUserFromGroupOrLeave,addToGroup, deleteChatForMe, deleteGroup, } from '../controller/chatController.js';
+import { accessChat, fetchChats, createGroupChat, renameGroup,removeUserFromGroupOrLeave,addToGroup, deleteChatForMe, deleteGroup, fetchChatInfo, } from '../controller/chatController.js';
 import protect from '../middleware/authMiddleware.js';
 import upload from "../middleware/multerAny.js"
 
@@ -14,4 +14,5 @@ router.route("/removeUserFromGroup").put(protect, removeUserFromGroupOrLeave);
 router.route("/addUserToGroup").put(protect, addToGroup);
 router.route("/deleteChatForMe/:chatId").delete(protect,deleteChatForMe);
 router.route("/deleteGroup/:chatId").delete(protect,deleteGroup);
+router.route("/chatInfo/:chatId").get(protect,fetchChatInfo);
 export default router;
