@@ -66,7 +66,7 @@ const uploadedFileMap = {};
 export const sendMessage = asyncHandler(async (req, res) => {
 
   const { chatId, content ,replyOf} = req.body;
-
+  console.log("User",req.user?._id);
   if (!chatId) {
     console.log("No Id passed into request");
     return res.sendStatus(400);
@@ -180,6 +180,123 @@ export const sendMessage = asyncHandler(async (req, res) => {
   }
 });
 
+
+export const message = asyncHandler(async (req, res, next) => {
+  const { chatId, content, replyOf, type } = req.body;
+  console.log("---><---")
+  if (!chatId) {
+    console.log("No chatId passed into request");
+    return res.sendStatus(400);
+  }
+
+  let attachmentData = null;
+  let messageType = type || 'text'; // Default to text unless overridden or uploaded
+
+  if (req.file) {
+    try {
+      const filePath = req.file.path;
+      const mimeType = mime.lookup(filePath);
+      const fileBuffer = fs.readFileSync(filePath);
+      const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
+      let cloudinaryResult = uploadedFileMap[fileHash];
+
+      if (!cloudinaryResult) {
+        cloudinaryResult = await cloudinary.v2.uploader.upload(filePath, {
+          resource_type: 'auto',
+          folder: 'Chat/messageData',
+          use_filename: true,
+          unique_filename: false
+        });
+        uploadedFileMap[fileHash] = cloudinaryResult;
+      }
+
+      fs.unlink(filePath, () => {});
+
+      // Determine type based on MIME if not explicitly provided
+      if (!type) {
+        if (mimeType.startsWith("image")) messageType = "image";
+        else if (mimeType.startsWith("video")) messageType = "video";
+        else if (mimeType.startsWith("audio")) messageType = "audio";
+        else if (
+          mimeType.includes("pdf") ||
+          mimeType.includes("msword") ||
+          mimeType.includes("officedocument")
+        ) messageType = "document";
+        else messageType = "file";
+      }
+
+      attachmentData = {
+        fileHash,
+        originalFilename: req.file.originalname,
+        secure_url: cloudinaryResult.secure_url,
+        url: cloudinaryResult.url,
+        public_id: cloudinaryResult.public_id,
+        resource_type: cloudinaryResult.resource_type,
+        folder: cloudinaryResult.folder || 'Chat',
+        uploaded_at: cloudinaryResult.created_at
+      };
+
+    } catch (err) {
+      console.error("File upload error:", err);
+      return res.status(500).json({ success: false, message: "File upload failed" });
+    }
+  }
+
+  // Support sending location as a message
+  if (type === 'location' && req.body.coordinates) {
+    console.log("Location Found.....");
+    console.log("Crd--<>",req.body.coordinates)
+    messageType = 'location';
+    attachmentData = {
+      coordinates: req.body.coordinates, // { lat, lng }
+      label: req.body.label || ''
+    };
+  }
+
+  const newMessage = {
+    sender: req.user._id,
+    content: content || null,
+    chat: chatId,
+    type: messageType,
+    attachment: attachmentData,
+    replyOf: replyOf || null
+  };
+
+  try {
+    let message = await Message.create(newMessage);
+
+    message = await message.populate("sender", "name");
+    message = await message.populate("chat");
+    message = await message.populate({
+      path: "replyOf",
+      populate: {
+        path: "sender",
+        select: "name"
+      }
+    });
+
+    message = await User.populate(message, {
+      path: "chat.users",
+      select: "name pic email",
+    });
+
+    await Chat.findByIdAndUpdate(chatId, { latestMessage: message });
+
+    await Chat.findByIdAndUpdate(chatId, {
+      $pull: { deletedBy: { $in: message.chat.users.map(user => user._id) } }
+    });
+
+    res.json(message);
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+});
+
+
+
+
 // React to mesaage
 export const reactToMessage = async (req, res) => {
   const { messageId } = req.params;
@@ -253,7 +370,7 @@ export const reactToMessage = async (req, res) => {
   }
 };
 
-
+// forward message
 export const forwardMessage = asyncHandler(async (req, res) => {
   const { messageId, targetChatId } = req.body;
 
@@ -345,7 +462,7 @@ export const allMessages = asyncHandler(async (req, res) => {
   }
 });
 
-
+// delete message
 export const deleteMessage = asyncHandler(async (req, res) => {
   const { messageId } = req.params;
   console.log("-->",messageId);

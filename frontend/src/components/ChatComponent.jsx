@@ -112,9 +112,9 @@ function ChatComponent({ messages, setMessages }) {
 
 
   return (
-    <div className="w-full h-full overflow-hidden">
+    <div className="w-full h-[100%] overflow-hidden">
       <div
-        className="overflow-y-auto h-full w-full flex flex-col"
+        className="overflow-y-auto hide-scrollbar h-full w-full flex flex-col"
         ref={messagesContainerRef}
       >
         {messages.map((message) => (

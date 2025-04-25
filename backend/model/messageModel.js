@@ -32,7 +32,7 @@ const messageModel = mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['text', 'image', 'video', 'file', 'audio'],
+    enum: ['text', 'image', 'video', 'file', 'audio','location',],
     default: 'text'
   },
   replyOf: {
@@ -46,7 +46,8 @@ const messageModel = mongoose.Schema({
     public_id: String,
     resource_type: String,
     folder: String,
-    uploaded_at: Date
+    uploaded_at: Date,
+    coordinates:String
   },
 
   senderReactions: [reactionSchema],
