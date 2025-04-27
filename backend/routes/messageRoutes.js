@@ -13,7 +13,6 @@ router.post('/react/:messageId', protect, reactToMessage);
 
 router.post('/forward', protect, forwardMessage);
 
-
 router.route('/:chatId').get(protect, allMessages)
 
 
