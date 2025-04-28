@@ -388,16 +388,50 @@ export const deleteChatForMe = async (req, res) => {
     }
 };
 
-export const muteChat=async(req,res)=>{
-    const chatId=req.params.chatId;
-    const chat = Chat.findById(chatId);
-    if(!chat)res.status(404).send({message:"Chat Not Found"});
+export const muteChat = async (req, res) => {
+    const chatId = req.params.chatId;
+
+    try {
+        const chat = await Chat.findById(chatId);
+
+        if (!chat) {
+            return res.status(404).send({ message: "Chat not found" });
+        }
+
+        if(chat.isMuted===true)return res.status(200).send({ message: "Chat is Already Muted"});
+
+
+        chat.isMuted = true;
+        await chat.save();
+
+        res.status(200).send({ message: "Chat muted successfully", chat });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: `Error : ${error}` });
+    }
 }
 
+export const unMuteChat = async (req, res) => {
+    const chatId = req.params.chatId;
 
+    try {
+        const chat = await Chat.findById(chatId);
 
+        if (!chat) {
+            return res.status(404).send({ message: "Chat not found" });
+        }
 
+        if(chat.isMuted===false)return res.status(200).send({ message: "Chat is Already UnMuted"});
 
+        chat.isMuted = false;
+        await chat.save();
+
+        res.status(200).send({ message: "Chat UnMuted successfully", chat });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: `Error : ${error}` });
+    }
+}
 
 // export const GroupChat = asyncHandler(async (req, res, next) => {
 

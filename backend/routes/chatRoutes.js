@@ -10,7 +10,8 @@ addToGroup,
 deleteChatForMe,
 deleteGroup,
 fetchChatInfo,
-muteChat, 
+muteChat,
+unMuteChat, 
 } 
 from '../controller/chatController.js';
 import protect from '../middleware/authMiddleware.js';
@@ -29,4 +30,5 @@ router.route("/deleteChatForMe/:chatId").delete(protect,deleteChatForMe);
 router.route("/deleteGroup/:chatId").delete(protect,deleteGroup);
 router.route("/chatInfo/:chatId").get(protect,fetchChatInfo);
 router.route("/muteChat/:chatId").get(protect,muteChat);
+router.route("/muteChat/:chatId").get(protect,unMuteChat);
 export default router;
