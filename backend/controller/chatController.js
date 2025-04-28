@@ -6,6 +6,7 @@ import fs from "fs";
 import crypto from "crypto";
 import cloudinary from "cloudinary";
 import mime from 'mime-types';
+import { message } from './messageController.js';
 
 
 cloudinary.v2.config({
@@ -386,6 +387,14 @@ export const deleteChatForMe = async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 };
+
+export const muteChat=async(req,res)=>{
+    const chatId=req.params.chatId;
+
+    const chat = Chat.findById(chatId);
+    if(!chat)res.status(404).send({message:"Chat Not Found"});
+
+}
 
 
 

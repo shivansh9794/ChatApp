@@ -9,6 +9,10 @@ const chatModel = mongoose.Schema({
         type:Boolean,
         default:false
     },
+    isMuted: {
+        type: Boolean,
+        default: false
+    },
     users:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
