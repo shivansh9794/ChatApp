@@ -390,10 +390,8 @@ export const deleteChatForMe = async (req, res) => {
 
 export const muteChat=async(req,res)=>{
     const chatId=req.params.chatId;
-
     const chat = Chat.findById(chatId);
     if(!chat)res.status(404).send({message:"Chat Not Found"});
-
 }
 
 
