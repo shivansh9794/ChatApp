@@ -371,40 +371,106 @@ export const reactToMessage = async (req, res) => {
 };
 
 // forward message
+// export const forwardMessage = asyncHandler(async (req, res) => {
+//   const { messageId, targetChatId } = req.body;
+
+//   if (!messageId || !targetChatId) {
+//     return res.status(400).json({ message: "Missing messageId or targetChatId" });
+//   }
+
+//   // Fetch the original message
+//   const originalMessage = await Message.findById(messageId);
+//   if (!originalMessage) {
+//     return res.status(404).json({ message: "Original message not found" });
+//   }
+
+//   // Create a new message using original's content
+//   const newMessage = {
+//     sender: req.user._id, // person forwarding it
+//     content: originalMessage.content,
+//     type: originalMessage.type,
+//     attachment: originalMessage.attachment || null,
+//     chat: targetChatId,
+//     replyOf: null // forwarded messages aren't replies by default
+//   };
+
+//   try {
+//     let message = await Message.create(newMessage);
+
+//     message = await message.populate("sender", "name pic");
+//     message = await message.populate("chat");
+
+//     message = await message.populate({
+//       path: "replyOf",
+//       populate: {
+//         path: "sender",
+//         select: "username"
+//       }
+//     });
+
+//     message = await User.populate(message, {
+//       path: "chat.users",
+//       select: "name pic email"
+//     });
+
+//     await Chat.findByIdAndUpdate(targetChatId, { latestMessage: message });
+
+//     res.status(201).json({ success: true, message });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: "Failed to forward message", error: error.message });
+//   }
+// });
 export const forwardMessage = asyncHandler(async (req, res) => {
   const { messageId, targetChatId } = req.body;
+  console.log("Forwarding Message...");
+  console.log("--->", messageId);
+  console.log("--->", targetChatId);
+  
+  let newMessage;
 
   if (!messageId || !targetChatId) {
     return res.status(400).json({ message: "Missing messageId or targetChatId" });
   }
 
-  // Fetch the original message
+
   const originalMessage = await Message.findById(messageId);
   if (!originalMessage) {
     return res.status(404).json({ message: "Original message not found" });
   }
 
-  // Create a new message using original's content
-  const newMessage = {
-    sender: req.user._id, // person forwarding it
-    content: originalMessage.content,
-    type: originalMessage.type,
-    attachment: originalMessage.attachment || null,
-    chat: targetChatId,
-    replyOf: null // forwarded messages aren't replies by default
-  };
+  if (originalMessage?.type === "text") {
+
+    newMessage = {
+      sender: req.userId,
+      content: originalMessage.content,
+      type: originalMessage.type,
+      chat: targetChatId,
+      replyOf: null,
+      isForwarded: true
+    }
+  }else{
+    newMessage = {
+      sender: req.userId,
+      content: originalMessage.content,
+      type: originalMessage.type,
+      attachment: originalMessage.attachment,
+      chat: targetChatId,
+      replyOf: null,
+      isForwarded: true
+    }
+  }
 
   try {
     let message = await Message.create(newMessage);
 
-    message = await message.populate("sender", "name pic");
+    message = await message.populate("sender", "name profilePhoto");
     message = await message.populate("chat");
 
     message = await message.populate({
       path: "replyOf",
       populate: {
         path: "sender",
-        select: "username"
+        select: "name profilePhoto"
       }
     });
 
@@ -420,7 +486,6 @@ export const forwardMessage = asyncHandler(async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to forward message", error: error.message });
   }
 });
-
 
 // Fetch all messages
 export const allMessages = asyncHandler(async (req, res) => {

@@ -398,7 +398,7 @@ export const muteChat = async (req, res) => {
             return res.status(404).send({ message: "Chat not found" });
         }
 
-        if(chat.isMuted===true)return res.status(200).send({ message: "Chat is Already Muted"});
+        if (chat.isMuted === true) return res.status(200).send({ message: "Chat is Already Muted" });
 
 
         chat.isMuted = true;
@@ -421,7 +421,7 @@ export const unMuteChat = async (req, res) => {
             return res.status(404).send({ message: "Chat not found" });
         }
 
-        if(chat.isMuted===false)return res.status(200).send({ message: "Chat is Already UnMuted"});
+        if (chat.isMuted === false) return res.status(200).send({ message: "Chat is Already UnMuted" });
 
         chat.isMuted = false;
         await chat.save();
@@ -513,3 +513,31 @@ export const unMuteChat = async (req, res) => {
 //     //     throw new Error(error.message);
 //     // }
 // })
+
+
+export const leaveGroup = async (req, res) => {
+    const chatId = req.body;
+    const userId = req.body;
+    try {
+        const chat = await Chat.findById(chatId);
+        if (!chatId) return res.status(404).send({ message: "Chat Not Found" });
+        if (!chat.users.includes(req.userId)) return res.send("User Not Found In Group");
+
+        const isAdminLeaving=chat.groupAdmin.toString() === userId;
+
+        const updatedChat = await Chat.findByIdAndUpdate(
+            chatId,
+            { $pull: { users: userId } },
+            { new: true }
+        ).populate("users", "name").populate("groupAdmin", "name")
+
+        if(isAdminLeaving && updatedChat.users.length > 0){
+            updatedChat.groupAdmin=updatedChat.users[0]._id;
+            await updatedChat.save();
+        }
+        res.status(200).json({ message: "User Left Group successfully", chat: updatedChat });
+    }
+    catch (error) {
+        res.status(500).json("Error in Leaving Group");
+    }
+}
