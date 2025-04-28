@@ -31,4 +31,5 @@ router.route("/deleteGroup/:chatId").delete(protect,deleteGroup);
 router.route("/chatInfo/:chatId").get(protect,fetchChatInfo);
 router.route("/muteChat/:chatId").get(protect,muteChat);
 router.route("/muteChat/:chatId").get(protect,unMuteChat);
+
 export default router;
