@@ -72,7 +72,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
     return res.sendStatus(400);
   }
 
-  let attachmentData = null;
+  let attachmentData;
   let messageType = 'text';
 
   if (req.file) {

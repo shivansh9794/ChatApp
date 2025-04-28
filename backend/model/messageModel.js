@@ -39,6 +39,10 @@ const messageModel = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Message" 
   },
+  isForwarded: {
+    type: String,
+    default : false 
+  },
   attachment: {
     fileHash: String,
     originalFilename: String,
