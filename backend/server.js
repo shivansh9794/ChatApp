@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
     // Message page Open
     socket.on("setup", (userData) => {
         socket.join(userData?._id);
-        console.log(userData?._id);
+        console.log("Setup-->",userData?._id);
         socket.emit('connected');
     });
 
@@ -64,8 +64,9 @@ io.on("connection", (socket) => {
 
         chat.users.forEach(user => {
             if (user._id == newMessageReceived.sender._id) return;
-
+            
             // Sending new message
+            console.log("Sending new message to ",user._id);
             socket.in(user._id).emit("message received", newMessageReceived);
 
             // Emiting unseen increment function
