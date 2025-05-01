@@ -120,7 +120,7 @@ function ChatComponent({ messages, setMessages }) {
         {messages.map((message) => (
           <div
             key={message._id}
-            className={`py-2 px-2 rounded-lg m-1 w-auto h-auto ${message?.sender?._id === user._id
+            className={`py-2 px-2 rounded-lg m-1 select-none w-auto h-auto ${message?.sender?._id === user._id
               ? 'bg-green-200 ml-auto text-right'
               : 'bg-blue-50 mr-auto text-left'
               }`}

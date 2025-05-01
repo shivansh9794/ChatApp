@@ -100,7 +100,7 @@ export const fetchChats = asyncHandler(async (req, res) => {
 
         res.status(200).send(chatsWithUnreadCount);
     } catch (error) {
-        res.status(400);
+        res.status(400)
         throw new Error(error.message);
     }
 });

@@ -7,6 +7,7 @@ import chatRoutes from './routes/chatRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
 import Message from './model/messageModel.js';
 import Chat from "./model/chatModel.js";
+import { fetchChats } from './controller/chatController.js';
 
 
 connectDB();
@@ -41,7 +42,7 @@ io.on("connection", (socket) => {
     // Message page Open
     socket.on("setup", (userData) => {
         socket.join(userData?._id);
-        console.log("Setup-->",userData?._id);
+        console.log("Setup-->", userData?._id);
         socket.emit('connected');
     });
 
@@ -64,9 +65,9 @@ io.on("connection", (socket) => {
 
         chat.users.forEach(user => {
             if (user._id == newMessageReceived.sender._id) return;
-            
+
             // Sending new message
-            console.log("Sending new message to ",user._id);
+            console.log("Sending new message to ", user._id);
             socket.in(user._id).emit("message received", newMessageReceived);
 
             // Emiting unseen increment function
@@ -122,6 +123,35 @@ io.on("connection", (socket) => {
             console.error(`[Error] Failed to mark messages as seen for Chat ${chatId}`, err);
         }
     });
+
+    // Total Unread Count
+    socket.on("get total unread", async (userId) => {
+        // try {
+        //     // Find all unread messages where user has NOT seen AND user is NOT the sender
+        //     const unreadMessages = await Message.find({
+        //         seenBy: { $ne: userId },
+        //         sender: { $ne: userId },
+        //         // Only include chats the user is a part of
+        //         // Optional but safer:
+        //         // chat: { $in: userChatIds } if you want stricter filtering
+        //     });
+
+        //     // Total unread messages count
+        //     const totalUnread = unreadMessages.length;
+
+        //     // Emit back the count
+        //     socket.emit("total unread count", totalUnread);
+        // } catch (err) {
+        //     console.error(`[Error] Fetching total unread count for user ${userId}`, err);
+        // }
+
+        try {
+
+        } catch (error) {
+            
+        }
+    });
+
 
     // typing 
     socket.on("typing", (room) => socket.in(room).emit("typing"));

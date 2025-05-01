@@ -14,6 +14,7 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
   const [openAddGroup, setOpenAddGroup] = useState(false);
   const [groupUserList, setGroupUserList] = useState([]);
   const [groupName, setGropuName] = useState('');
+  const [totalUnreadCount, setTotalUnreadCount] = useState(0);
 
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
@@ -112,6 +113,12 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
     };
   }, [socket]);
 
+  useEffect(() => {
+    const total = chats.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0);
+    setTotalUnreadCount(total);
+    console.log(totalUnreadCount);
+  }, [chats]);
+
 
   return (
     <div className='bg-gray-300 w-full h-full border-b-2  border-r-2'>
@@ -119,7 +126,11 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
       {/* Chats Header */}
       <div className='bg-gray-300 shadow-lg w-full p-2 flex justify-between'>
         <h1 className='text-xl font-bold'>My Chats</h1>
-        <button className='p-2 bg-green-500 rounded-2xl font-semibold cursor-pointer hover:bg-green-300' onClick={() => setOpenAddGroup((prev) => !prev)}>Create new Group</button>
+        <div className='flex justify-center items-center gap-2'>
+          <button className='p-2 bg-green-500 rounded-2xl font-semibold cursor-pointer hover:bg-green-300' onClick={() => setOpenAddGroup((prev) => !prev)}>Create new Group</button>
+          {totalUnreadCount!=0 ? <h2 className='font-bold text-white rounded-full p-1 bg-red-600'>{totalUnreadCount}</h2> :''}
+        </div>
+        
       </div>
 
       {/* Open Add to group Toggle */}

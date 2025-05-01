@@ -29,8 +29,6 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         socket.on("stop typing", () => setIsTyping(false));
     }, []);
 
-
-
     // Fetch messages when selectedChat changes
     const fetchMessages = async () => {
 
@@ -63,9 +61,6 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         selectedChatCompare = selectedChat;
     }, [selectedChat]); // Re-fetch messages when selectedChat changes
 
-
-
-
     // receive message from socket
     useEffect(() => {
         socket.on("message received", (newMessageReceived) => {
@@ -78,9 +73,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         })
     });
 
-
-
-
+    // Show File
     let [previewUrl, setPreview] = useState(null);
     useEffect(() => {
         if (file) {

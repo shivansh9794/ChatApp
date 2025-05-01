@@ -505,6 +505,11 @@ export const allMessages = asyncHandler(async (req, res) => {
         }
       });
 
+      messages = await User.populate(messages, {
+        path: "chat.users",
+        select: "name",
+      });
+
     // Update seenBy field for unseen messages
     const updatePromises = messages.map(msg => {
       if (!msg.seenBy?.includes(userId) && msg?.sender?._id !== userId) {
