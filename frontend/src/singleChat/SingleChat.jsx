@@ -168,7 +168,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
     };
 
     return (
-        <div className="bg-gray-300 border-l-2 border-r-2 border-b-2 h-[91vh] hide-scrollbar w-full flex flex-col justify-end">
+        <div className="bg-gray-300 border-l-2 border-r-2 border-b-2 h-[90vh] hide-scrollbar w-full flex flex-col justify-end">
 
             {/* Message Page Header */}
             <div className='w-full p-2 bg-gray-300 shadow-lg flex'>

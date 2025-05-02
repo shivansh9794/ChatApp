@@ -37,7 +37,7 @@ const Ui = () => {
     }
     // Main Return
     return (
-        <div className='w-[100%] flex flex-col'>            
+        <div className='w-[100%] flex flex-col h-screen'>            
             {/* Navbar */}
             <div className='bg-green-300 p-2 h-auto flex justify-between w-[100%]'>
                 <div className='font-extrabold text-2xl text-black '>CHAT SIDE</div>
@@ -51,7 +51,7 @@ const Ui = () => {
                 </div>
 
                 {/* Message Page */}
-                <div className={`col-span-7 w-full`} >
+                <div className={`col-span-7 w-full hide-scrollbar`} >
                     {showChatPage ?
                         <SingleChat fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/> : skeleton()}
                 </div>

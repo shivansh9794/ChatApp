@@ -121,7 +121,7 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
 
 
   return (
-    <div className='bg-gray-300 w-full h-full border-b-2  border-r-2'>
+    <div className='bg-gray-300 w-full h-auto border-b-2  border-r-2'>
 
       {/* Chats Header */}
       <div className='bg-gray-300 shadow-lg w-full p-2 flex justify-between'>
@@ -183,7 +183,7 @@ const MyChats = ({ fetchAgain, setFetchAgain, setShowChatPage }) => {
       {/* All the Chats */}
       <div>
         {chats ? (
-          <div className='overflow-y-auto hide-scrollbar h-[514px] w-full'>
+          <div className='overflow-y-auto hide-scrollbar h-[81vh] w-full'>
             {
               chats?.map((chat) => {
                 return (
