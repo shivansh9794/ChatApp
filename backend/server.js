@@ -42,7 +42,7 @@ io.on("connection", (socket) => {
     // Message page Open
     socket.on("setup", (userData) => {
         socket.join(userData?._id);
-        console.log("Setup-->", userData?._id);
+        console.log("User Joined Chat Room -->", userData?._id);
         socket.emit('connected');
     });
 
@@ -52,10 +52,10 @@ io.on("connection", (socket) => {
         socket.emit('connected');
     });
 
-    // Join Chat
+    // Join Chat Room
     socket.on('join chat', (room) => {
         socket.join(room);
-        console.log('user Joined room :' + room);
+        console.log('user Joined Chat room :' + room);
     });
 
     // New Message
@@ -154,6 +154,6 @@ io.on("connection", (socket) => {
 
 
     // typing 
-    socket.on("typing", (room) => socket.in(room).emit("typing"));
-    socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+    socket.on("typing", (chatId) => socket.in(chatId).emit("typing"));
+    socket.on("stop typing", (chatId) => socket.in(chatId).emit("typing stopped"));
 });
