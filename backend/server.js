@@ -157,3 +157,4 @@ io.on("connection", (socket) => {
     socket.on("typing", (chatId) => socket.in(chatId).emit("typing"));
     socket.on("stop typing", (chatId) => socket.in(chatId).emit("typing stopped"));
 });
+
