@@ -35,3 +35,4 @@ router.route("/muteChat/:chatId").get(protect,unMuteChat);
 router.route("/leaveGroup/").put(protect,leaveGroup);
 
 export default router;
+
