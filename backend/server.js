@@ -14,8 +14,13 @@ connectDB();
 const app = express();
 const port = 8000;
 app.use(express.json())
-app.use(cors('*'));
+// app.use(cors('*'));
 
+app.use(cors({
+    origin: 'http://localhost:5173', 
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 // app.use(notFound)
 // app.use(errorHandler)
 app.get("/", (req, res) => {
@@ -31,8 +36,12 @@ const server = app.listen(port, () => {
 
 const io = new Server(server, {
     pingTimeout: 6000,
+    // cors: {
+    //     origin: '*'
+    // }
     cors: {
-        origin: '*'
+        origin: 'http://localhost:5173',
+        methods: ['GET', 'POST']
     },
 })
 
@@ -157,9 +166,3 @@ io.on("connection", (socket) => {
     socket.on("typing", (chatId) => socket.in(chatId).emit("typing"));
     socket.on("stop typing", (chatId) => socket.in(chatId).emit("typing stopped"));
 });
-
-<<<<<<< HEAD
-
-console.log("hello");
-=======
->>>>>>> 333da95ecf0600d5e0978d8ccc4669adb93cecc3

@@ -3,6 +3,7 @@ import User from '../model/userModel.js';
 import generateToken from '../config/generateToken.js';
 
 export const registerUser = asyncHandler(async (req, res) => {
+    console.log("hitttt");
     const { name, email, password, pic } = req.body
 
     if (!name || !email || !password) {
@@ -80,5 +81,30 @@ export const deleteUser = asyncHandler(async (req, res) => {
     } catch (error) {
         res.status(500).send({ message: "Error deleting user", error });
     }
-    
+
+});
+
+export const forgetPassword = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        res.status(400);
+        throw new Error("Email and new password are required");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
+
+    // Update password
+    user.password = password;
+
+    await user.save();
+
+    res.status(200).json({
+        message: "Password changed successfully"
+    });
 });
