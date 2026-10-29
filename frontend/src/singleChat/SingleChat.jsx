@@ -264,18 +264,19 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
     const [typing, setTyping] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [sending, setSending] = useState(false);
 
     const socketRef = useRef(null);
     const selectedChatRef = useRef(null);
     const typingTimeoutRef = useRef(null);
     const fileInputRef = useRef(null);
+    const messagesEndRef = useRef(null);
 
-    // Keep selected chat available to socket callbacks.
     useEffect(() => {
         selectedChatRef.current = selectedChat;
     }, [selectedChat]);
 
-    // Initialize Socket.IO connection.
+    // Initialize Socket.IO.
     useEffect(() => {
         const userData = JSON.parse(
             localStorage.getItem('userInfo') || 'null'
@@ -313,7 +314,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         };
     }, []);
 
-    // Fetch messages when chat changes.
+    // Fetch messages when the selected chat changes.
     useEffect(() => {
         if (!selectedChat?._id || !user?.token) {
             setMessages([]);
@@ -374,7 +375,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         });
     }, [selectedChat?._id, messages]);
 
-    // Receive messages without duplicate socket listeners.
+    // Receive messages. Register one listener per connection.
     useEffect(() => {
         const socket = socketRef.current;
 
@@ -398,9 +399,9 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                         String(incomingMessage._id)
                 );
 
-                if (exists) return previousMessages;
-
-                return [...previousMessages, incomingMessage];
+                return exists
+                    ? previousMessages
+                    : [...previousMessages, incomingMessage];
             });
         };
 
@@ -411,7 +412,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         };
     }, [socketConnected]);
 
-    // Create a preview URL for selected files.
+    // File preview.
     useEffect(() => {
         if (!file) {
             setPreviewUrl(null);
@@ -424,7 +425,15 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
         return () => URL.revokeObjectURL(url);
     }, [file]);
 
-    // Header name: find the other user by ID.
+    // Scroll to the latest message.
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'end',
+        });
+    }, [messages, isTyping]);
+
+    // Find the other participant by ID.
     const otherUser = selectedChat?.users?.find(
         (chatUser) =>
             String(chatUser?._id) !== String(user?._id)
@@ -436,33 +445,34 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
             ? selectedChat.chatName || 'Group Chat'
             : otherUser?.name || 'Chat';
 
-    // Send message using Enter or the send button.
+    // Send message with Enter or the send button.
     const sendMessage = async (event) => {
         if (event.key !== 'Enter' || event.shiftKey) return;
 
-        if (!newMessage.trim() && !file) return;
-        if (!selectedChat?._id || !user?.token) return;
-
         event.preventDefault();
 
+        if (sending || (!newMessage.trim() && !file)) return;
+        if (!selectedChat?._id || !user?.token) return;
+
+        const currentChatId = selectedChat._id;
+        const messageText = newMessage.trim();
+        const selectedFile = file;
+
         const formData = new FormData();
-        formData.append('chatId', selectedChat._id);
-        formData.append('content', newMessage.trim());
+        formData.append('chatId', currentChatId);
+        formData.append('content', messageText);
 
-        if (file) {
-            formData.append('file', file);
+        if (selectedFile) {
+            formData.append('file', selectedFile);
         }
-
-        socketRef.current?.emit(
-            'stop typing',
-            selectedChat._id
-        );
-
-        setTyping(false);
 
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current);
         }
+
+        socketRef.current?.emit('stop typing', currentChatId);
+        setTyping(false);
+        setSending(true);
 
         try {
             const config = {
@@ -477,6 +487,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 config
             );
 
+            // Add the saved message only once.
             setMessages((previousMessages) => {
                 const exists = previousMessages.some(
                     (message) =>
@@ -506,6 +517,8 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 'Error sending message:',
                 error.response?.data || error.message
             );
+        } finally {
+            setSending(false);
         }
     };
 
@@ -517,38 +530,44 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
 
         if (!typing) {
             setTyping(true);
-
-            socketRef.current?.emit(
-                'typing',
-                selectedChat._id
-            );
+            socketRef.current?.emit('typing', selectedChat._id);
         }
 
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current);
         }
 
-        typingTimeoutRef.current = setTimeout(() => {
-            socketRef.current?.emit(
-                'stop typing',
-                selectedChat._id
-            );
+        const currentChatId = selectedChat._id;
 
+        typingTimeoutRef.current = setTimeout(() => {
+            socketRef.current?.emit('stop typing', currentChatId);
             setTyping(false);
         }, 1000);
     };
 
-    const toggleFileInput = () => {
-        setShowFileInput((previous) => !previous);
+    const handleSendClick = () => {
+        sendMessage({
+            key: 'Enter',
+            shiftKey: false,
+            preventDefault: () => {},
+        });
+    };
+
+    const removeFile = () => {
+        setFile(null);
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     if (!selectedChat) {
         return (
-            <div className="h-[90vh] w-full flex items-center
+            <div className="h-full min-h-0 w-full flex items-center
                 justify-center rounded-2xl border border-slate-200
                 bg-white shadow-sm">
 
-                <div className="text-center px-6">
+                <div className="px-6 text-center">
                     <div className="mx-auto mb-4 flex h-16 w-16
                         items-center justify-center rounded-2xl
                         bg-indigo-50 text-indigo-600">
@@ -583,12 +602,13 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
     }
 
     return (
-        <div className="h-[90vh] w-full flex flex-col overflow-hidden
-            bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div className="flex h-full min-h-0 w-full flex-col
+            overflow-hidden rounded-2xl border border-slate-200
+            bg-white shadow-sm">
 
-            {/* Modern Chat Header */}
-            <div className="flex items-center gap-3 px-4 sm:px-5 py-4
-                bg-white border-b border-slate-100">
+            {/* Header: fixed height */}
+            <header className="flex shrink-0 items-center gap-3
+                border-b border-slate-100 bg-white px-4 py-3 sm:px-5">
 
                 <div className="relative shrink-0">
                     {selectedChat.isGroupChat &&
@@ -596,20 +616,20 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                         <img
                             src={selectedChat.groupProfilePic.url}
                             alt={senderName}
-                            className="w-12 h-12 rounded-full object-cover
-                                ring-2 ring-indigo-100"
+                            className="h-11 w-11 rounded-full
+                                object-cover ring-2 ring-indigo-100"
                         />
                     ) : (
-                        <div className="w-12 h-12 rounded-full
+                        <div className="flex h-11 w-11 items-center
+                            justify-center rounded-full
                             bg-gradient-to-br from-indigo-500 to-violet-600
-                            text-white flex items-center justify-center
-                            text-lg font-bold shadow-sm">
+                            text-lg font-bold text-white">
                             {senderName?.charAt(0)?.toUpperCase() || '?'}
                         </div>
                     )}
 
                     <span className={`absolute bottom-0 right-0
-                        w-3 h-3 rounded-full border-2 border-white ${
+                        h-3 w-3 rounded-full border-2 border-white ${
                             socketConnected
                                 ? 'bg-emerald-500'
                                 : 'bg-amber-400'
@@ -617,12 +637,12 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                    <h1 className="text-base sm:text-lg font-bold
-                        text-slate-800 truncate">
+                    <h1 className="truncate text-base font-bold
+                        text-slate-800 sm:text-lg">
                         {senderName}
                     </h1>
 
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="mt-0.5 text-xs text-slate-500">
                         {isTyping
                             ? 'Typing...'
                             : selectedChat.isGroupChat
@@ -631,42 +651,46 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                     </p>
                 </div>
 
-                <div className="hidden sm:flex items-center gap-2
-                    rounded-full bg-slate-50 px-3 py-1.5">
-                    <span className={`w-2 h-2 rounded-full ${
+                <div className="hidden shrink-0 items-center gap-2
+                    rounded-full bg-slate-50 px-3 py-1.5 sm:flex">
+                    <span className={`h-2 w-2 rounded-full ${
                         socketConnected
                             ? 'bg-emerald-500'
                             : 'bg-amber-400'
                     }`} />
 
-                    <span className="text-xs font-medium text-slate-600">
+                    <span className="text-xs text-slate-600">
                         {socketConnected ? 'Connected' : 'Connecting'}
                     </span>
                 </div>
-            </div>
+            </header>
 
-            {/* Message Area */}
-            <div className="flex-1 min-h-0 overflow-y-auto bg-slate-50">
+            {/* Message list: only this section scrolls */}
+            <main className="flex-1 min-h-0 overflow-y-auto
+                overscroll-contain bg-slate-50 px-2 py-3 sm:px-4">
                 <ChatComponent
                     messages={messages}
                     user={user}
                     setMessages={setMessages}
                 />
-            </div>
 
-            {/* Typing Indicator */}
+                <div ref={messagesEndRef} />
+            </main>
+
+            {/* Typing indicator */}
             {isTyping && (
-                <div className="px-5 py-2 bg-slate-50">
+                <div className="shrink-0 border-t border-slate-100
+                    bg-white px-4 py-2">
                     <span className="inline-flex items-center gap-2
-                        text-sm text-indigo-600 font-medium">
+                        text-sm font-medium text-indigo-600">
                         <span className="flex gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full
-                                bg-indigo-500 animate-bounce" />
-                            <span className="w-1.5 h-1.5 rounded-full
-                                bg-indigo-500 animate-bounce
+                            <span className="h-1.5 w-1.5 animate-bounce
+                                rounded-full bg-indigo-500" />
+                            <span className="h-1.5 w-1.5 animate-bounce
+                                rounded-full bg-indigo-500
                                 [animation-delay:150ms]" />
-                            <span className="w-1.5 h-1.5 rounded-full
-                                bg-indigo-500 animate-bounce
+                            <span className="h-1.5 w-1.5 animate-bounce
+                                rounded-full bg-indigo-500
                                 [animation-delay:300ms]" />
                         </span>
                         Typing
@@ -674,37 +698,36 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 </div>
             )}
 
-            {/* File Preview */}
+            {/* Attachment preview */}
             {showFileInput && (
-                <div className="px-4 pt-3 pb-2 bg-white
-                    border-t border-slate-100">
+                <div className="shrink-0 border-t border-slate-100
+                    bg-white px-3 pt-3 sm:px-4">
 
                     {file && (
                         <div className="mb-3 flex items-center gap-3
                             rounded-xl border border-indigo-100
-                            bg-indigo-50/60 p-3">
+                            bg-indigo-50/70 p-3">
 
                             {file.type.startsWith('image/') && previewUrl ? (
                                 <img
                                     src={previewUrl}
-                                    alt="Preview"
-                                    className="w-14 h-14 rounded-lg
-                                        object-cover border border-white"
+                                    alt="File preview"
+                                    className="h-12 w-12 rounded-lg
+                                        border border-white object-cover"
                                 />
                             ) : (
-                                <div className="w-12 h-12 rounded-lg
-                                    bg-white text-indigo-600
-                                    flex items-center justify-center text-xl">
+                                <div className="flex h-12 w-12 shrink-0
+                                    items-center justify-center rounded-lg
+                                    bg-white text-xl text-indigo-600">
                                     📎
                                 </div>
                             )}
 
                             <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold
-                                    text-slate-700 truncate">
+                                <p className="truncate text-sm font-semibold
+                                    text-slate-700">
                                     {file.name}
                                 </p>
-
                                 <p className="text-xs text-slate-500">
                                     Attachment ready
                                 </p>
@@ -712,16 +735,11 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
 
                             <button
                                 type="button"
-                                onClick={() => {
-                                    setFile(null);
-
-                                    if (fileInputRef.current) {
-                                        fileInputRef.current.value = '';
-                                    }
-                                }}
-                                className="w-8 h-8 rounded-full
-                                    text-slate-500 hover:text-red-500
-                                    hover:bg-white transition"
+                                onClick={removeFile}
+                                className="flex h-8 w-8 shrink-0
+                                    items-center justify-center rounded-full
+                                    text-slate-500 hover:bg-white
+                                    hover:text-red-500"
                                 aria-label="Remove attachment"
                             >
                                 ✕
@@ -735,7 +753,7 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                         onChange={(event) => {
                             setFile(event.target.files?.[0] || null);
                         }}
-                        className="block w-full text-sm text-slate-600
+                        className="mb-3 block w-full text-sm text-slate-600
                             file:mr-3 file:rounded-lg file:border-0
                             file:bg-indigo-100 file:px-4 file:py-2
                             file:font-semibold file:text-indigo-700
@@ -744,21 +762,23 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                 </div>
             )}
 
-            {/* Modern Message Composer */}
-            <div className="p-3 sm:p-4 bg-white
-                border-t border-slate-100">
+            {/* Composer: always stays at the bottom */}
+            <footer className="relative z-10 shrink-0 border-t
+                border-slate-200 bg-white p-3 pb-[max(12px,env(safe-area-inset-bottom))]
+                sm:p-4">
 
-                <div className="flex items-end gap-2 rounded-2xl
+                <div className="flex items-center gap-2 rounded-2xl
                     border border-slate-200 bg-slate-50 p-2
-                    focus-within:border-indigo-300
-                    focus-within:ring-4 focus-within:ring-indigo-50
-                    transition-all">
+                    transition-all focus-within:border-indigo-300
+                    focus-within:ring-4 focus-within:ring-indigo-50">
 
                     <button
                         type="button"
-                        onClick={toggleFileInput}
-                        className={`w-10 h-10 shrink-0 rounded-xl
-                            flex items-center justify-center
+                        onClick={() => {
+                            setShowFileInput((previous) => !previous);
+                        }}
+                        className={`flex h-10 w-10 shrink-0
+                            items-center justify-center rounded-xl
                             text-xl transition ${
                                 showFileInput
                                     ? 'bg-indigo-100 text-indigo-700'
@@ -771,55 +791,52 @@ const ChatBox = ({ fetchAgain, setFetchAgain }) => {
                     </button>
 
                     <input
-                        className="flex-1 min-w-0 bg-transparent
-                            text-sm text-slate-800
-                            placeholder:text-slate-400
-                            px-2 py-3 outline-none"
+                        type="text"
+                        className="min-w-0 flex-1 bg-transparent
+                            px-2 py-3 text-sm text-slate-800
+                            outline-none placeholder:text-slate-400"
                         placeholder="Write a message..."
-                        onChange={typingHandler}
                         value={newMessage}
+                        onChange={typingHandler}
                         onKeyDown={sendMessage}
+                        aria-label="Write a message"
                     />
 
                     <button
                         type="button"
-                        disabled={!newMessage.trim() && !file}
-                        onClick={() => {
-                            sendMessage({
-                                key: 'Enter',
-                                shiftKey: false,
-                                preventDefault: () => {},
-                            });
-                        }}
-                        className="w-10 h-10 shrink-0 rounded-xl
-                            flex items-center justify-center
-                            bg-indigo-600 text-white hover:bg-indigo-700
-                            disabled:bg-slate-200 disabled:text-slate-400
-                            disabled:cursor-not-allowed shadow-sm transition"
+                        onClick={handleSendClick}
+                        disabled={sending || (!newMessage.trim() && !file)}
+                        className="flex h-10 w-10 shrink-0
+                            items-center justify-center rounded-xl
+                            bg-indigo-600 text-white shadow-sm
+                            transition hover:bg-indigo-700
+                            disabled:cursor-not-allowed
+                            disabled:bg-slate-200
+                            disabled:text-slate-400"
                         title="Send message"
                         aria-label="Send message"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="w-5 h-5"
-                        >
-                            <path d="m22 2-7 20-4-9-9-4Z" />
-                            <path d="M22 2 11 13" />
-                        </svg>
+                        {sending ? (
+                            <span className="h-4 w-4 animate-spin
+                                rounded-full border-2 border-current
+                                border-t-transparent" />
+                        ) : (
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="h-5 w-5"
+                            >
+                                <path d="m22 2-7 20-4-9-9-4Z" />
+                                <path d="M22 2 11 13" />
+                            </svg>
+                        )}
                     </button>
                 </div>
-
-                <p className="hidden sm:block text-center
-                    text-[11px] text-slate-400 mt-2">
-                    Press Enter to send your message
-                </p>
-            </div>
+            </footer>
         </div>
     );
 };
